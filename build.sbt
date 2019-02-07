@@ -1,5 +1,5 @@
 val ScalaZVersion = "7.2.27"
-val ZIOVersion = "0.6.0"
+val ZIOVersion    = "0.6.0"
 
 lazy val root = project
   .in(file("."))
@@ -8,20 +8,19 @@ lazy val root = project
     organization := "net.degoes",
     scalaVersion := "2.12.6",
     initialCommands in Compile in console := """
-                                           |import scalaz._
-                                           |import scalaz.zio._
-                                           |import scalaz.zio.console._
-                                           |import scalaz.zio.stream._
-                                           |object replRTS extends RTS {}
-                                           |import replRTS._
-                                           |implicit class RunSyntax[E, A](io: IO[E, A]){ def unsafeRun: A = replRTS.unsafeRun(io) }
+                                               |import scalaz._
+                                               |import scalaz.zio._
+                                               |import scalaz.zio.console._
+                                               |import scalaz.zio.stream._
+                                               |object replRTS extends RTS {}
+                                               |import replRTS._
+                                               |implicit class RunSyntax[E, A](io: IO[E, A]){ def unsafeRun: A = replRTS.unsafeRun(io) }
                                          """.stripMargin
   )
 
 addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.9.6")
 addCommandAlias("fmt", "all scalafmtSbt scalafmt test:scalafmt")
-addCommandAlias("check",
-                "all scalafmtSbtCheck scalafmtCheck test:scalafmtCheck")
+addCommandAlias("check", "all scalafmtSbtCheck scalafmtCheck test:scalafmtCheck")
 
 libraryDependencies ++= Seq(
   // Scalaz

@@ -2,6 +2,4 @@
 
 package net.degoes.concurrency
 
-object exercises {
-
-}
+object exercises {}

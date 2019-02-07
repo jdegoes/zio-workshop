@@ -2,6 +2,4 @@
 
 package net.degoes.essentials
 
-object exercises {
-
-}
+object exercises {}

@@ -2,6 +2,4 @@
 
 package net.degoes.zio
 
-object exercises {
-
-}
+object exercises {}
