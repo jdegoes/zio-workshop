@@ -31,12 +31,6 @@ libraryDependencies ++= Seq(
   "com.lihaoyi" % "ammonite" % "1.1.2" % "test" cross CrossVersion.full
 )
 
-resolvers ++= Seq(
-  "Typesafe Snapshots" at "http://repo.typesafe.com/typesafe/snapshots/",
-  "Secured Central Repository" at "https://repo1.maven.org/maven2",
-  Resolver.sonatypeRepo("snapshots")
-)
-
 // Ammonite REPL
 sourceGenerators in Test += Def.task {
   val file = (sourceManaged in Test).value / "amm.scala"
