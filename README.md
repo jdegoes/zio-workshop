@@ -40,4 +40,4 @@ work through those following chapters:
 
 # Legal
 
-Copyright&copy; 2018 John A. De Goes. All rights reserved.
+Copyright&copy; 2019 John A. De Goes. All rights reserved.
