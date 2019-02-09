@@ -7,7 +7,7 @@ you will learn how to think about pure functional programs as the composition of
 interaction with the real world. By the end of the day, you'll know to build real-world, effectful applications 
 that are easy to reason about and easy to test using the ZIO library.
 
-###Effects
+### Effects
 
  In object-oriented programming, types say nothing about the behavior of a function, and detailed exploration of code 
  is necessary to understand behavior. Functional programming solves these problems by turning effects into ordinary values, 
@@ -15,13 +15,13 @@ that are easy to reason about and easy to test using the ZIO library.
  and provides powerful ways of reasoning about and composing programs. You will learn how to model any interaction 
  with effectful systems using the ZIO library, trivially reusing existing code, even if it's not written using ZIO.
 
-###Resource-Safety
+### Resource-Safety
 
  In object-oriented programming, the only primitive for resource safety is try / finally, which doesn’t work for asynchronous and concurrent programs, 
  and can’t help avoiding thread-leaks. Functional programming allows us to increase the usefulness of try / finally across asynchronous and concurrent code, and across threads as well as file and socket handles. 
  You will learn how to write ZIO programs that cannot leak resources.
 
-###Testing & Mocking
+### Testing & Mocking
 
  In object-oriented programming, testing effectful code is difficult, often requiring strange mocking libraries that 
  perform bytecode rewriting. Functional programming makes testing even the most effectful code trivial, without requiring 

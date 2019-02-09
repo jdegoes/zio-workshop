@@ -1,4 +1,4 @@
-#ZIO Applications
+# ZIO Applications
 
 In ZIO Applications, you will solidify your extensive knowledge of ZIO to build realistic applications across a variety of domains. 
 As you build interactive applications, you'll gain insight into how to structure purely functional code bases, 
