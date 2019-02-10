@@ -25,7 +25,7 @@ work through those following chapters:
 2. Clone the repository.
 
     ```bash
-    git clone git@github.com:jdegoes/functional-scala.git .
+    git clone git@github.com:jdegoes/zio-workshop.git
     ```
 5. Launch `sbt`.
 
