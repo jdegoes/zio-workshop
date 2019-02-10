@@ -35,7 +35,7 @@ work through those following chapters:
 6. Enter continuous compilation mode.
 
     ```bash
-    sbt:Functional Scala> ~ compile
+    sbt:zio-workshop> ~ compile
     ```
 
 # Legal
