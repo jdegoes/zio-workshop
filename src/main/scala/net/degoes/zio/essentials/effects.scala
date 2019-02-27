@@ -4,11 +4,16 @@ package net.degoes.zio
 package essentials
 
 object effects {
+  /**
+   * `Console` is an immutable data structure that describes a console program 
+   * that may involve reading from the console, writing to the console, or 
+   * returning a value.
+   */
   sealed trait Console[A] { self =>
     import Console._
     
     /**
-     * Implement flatMap for every type of `Console[A]` to turn it into a 
+     * Implement `flatMap` for every type of `Console[A]` to turn it into a 
      * `Console[B]` using the function `f`.
      */
     final def flatMap[B](f: A => Console[B]): Console[B] = ???
@@ -20,11 +25,9 @@ object effects {
     final def <*[B](that: Console[B]): Console[A] = (self zip that).map(_._1)
 
     /**
-     * Implement zip using `flatMap` and `map`.
+     * Implement the `zip` function using `flatMap` and `map`.
      */
-    final def zip[B](that: Console[B]): Console[(A, B)] = 
-      self.flatMap(a => that.map(b => (a, b)))
-
+    final def zip[B](that: Console[B]): Console[(A, B)] = ???
   }
   object Console {
     final case class ReadLine[A](next: String => Console[A])      extends Console[A]
@@ -34,9 +37,9 @@ object effects {
     /**
      * Implement the following helper functions:
      */
-    val readLine: Console[String]              = ???
-    def writeLine(line: String): Console[Unit] = ???
-    def succeed[A](a: => A): Console[A]        = ???
+    final val readLine: Console[String]              = ???
+    final def writeLine(line: String): Console[Unit] = ???
+    final def succeed[A](a: => A): Console[A]        = ???
   }
 
   /**

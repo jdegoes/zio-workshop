@@ -6,18 +6,15 @@ package essentials
 import java.time.LocalDate
 
 /**
- * Pure functions should be:
- *     Total
- *     Deterministic
- *     Free of side effect
+ * Functions are total, deterministic, and free of side effects.
  */
 object functions {
 
   /**
-   * Turn the following functions into pure functions
+   * Turn the following pseudo-functions into functions.
    */
   /**
-   * Non total --> Total
+   * Partial => Total
    */
   def parseInt1(s: String): Int   = s.toInt
   def parseInt2( /* ??? */ ): ??? = ???
@@ -32,7 +29,7 @@ object functions {
   def secondChar2(/* ??? */): Char = ???
 
   /**
-   * Non deterministic --> Deterministic
+   * Non-deterministic => Deterministic
    */
   def increment1: Int              = scala.util.Random.nextInt(0) + 1
   def increment2( /* ??? */ ): ??? = ???
@@ -49,7 +46,7 @@ object functions {
   def computeAge2( /*???*/ ): ??? = ???
 
   /**
-   * With side effects ---> Free of side effects
+   * Side effects => Free of side effects
    */
   def get1(a: Int): Int = {
     println(s"the given of a is: $a")
