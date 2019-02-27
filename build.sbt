@@ -1,4 +1,4 @@
-val ZIOVersion = "0.6.3"
+//val ZIOVersion = "1.0-RC1"
 
 lazy val root = project
   .in(file("."))
@@ -23,7 +23,7 @@ addCommandAlias("check", "all scalafmtSbtCheck scalafmtCheck test:scalafmtCheck"
 
 libraryDependencies ++= Seq(
   // Scalaz-zio
-  "org.scalaz" %% "scalaz-zio"        % ZIOVersion,
+//  "org.scalaz" %% "scalaz-zio"        % ZIOVersion,
 //  "org.scalaz" %% "scalaz-zio-future" % ZIOVersion,
   // Ammonite
   "com.lihaoyi" % "ammonite" % "1.1.2" % "test" cross CrossVersion.full

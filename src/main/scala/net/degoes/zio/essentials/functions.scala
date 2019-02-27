@@ -28,6 +28,9 @@ object functions {
   def head1[A](l: Seq[A]): A     = l.head
   def head2[A]( /* ??? */ ): ??? = ???
 
+  def secondChar1(str: String): Char = str.charAt(2)
+  def secondChar2(/* ??? */): Char = ???
+
   /**
    * Non deterministic --> Deterministic
    */
