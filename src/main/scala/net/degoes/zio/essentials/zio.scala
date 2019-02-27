@@ -100,30 +100,32 @@ object zio_values {
   def putStrLn(line: String): ??? = println(line) ?
 
   /**
-   * Using the `ZIO.effectTotal` method, wrap Scala's `readLine` method to import it
-   * into the world of pure functional programming.
-   * and identify the correct ZIO type.
+   * Using the `ZIO.effect` method, wrap Scala's `readLine` method to make it 
+   * purely functional with the correct ZIO error type.
+   * 
+   * Note: You will have to use the `.refineOrDie` method to refine the 
+   * `Throwable` type into something more specific.
    */
   val getStrLn: ??? = scala.io.StdIn.readLine ?
 
   /**
-   * Using the `ZIO.sync` method, wrap Scala's `getLines` method to
-   * import it into the world of pure functional programming.
-   * and identify the correct ZIO type.
+   * Using the `ZIO.effect` method, wrap Scala's `getLines` to make it 
+   * purely functional with the correct ZIO error type.
+   * 
+   * Note: You will have to use the `.refineOrDie` method to refine the 
+   * `Throwable` type into something more specific.
    */
-  def readFile(file: File): IO[???, List[String]] = Source.fromFile(file).getLines.toList ?
+  def readFile(file: File): IO[???, List[String]] = 
+    Source.fromFile(file).getLines.toList ?
 
   /**
-   * Identify the correct method, error, and value type to import
-   * `Array#update` safely into the world of pure functional programming.
+   * Using the `ZIO.effect` method, wrap Scala's `Array#update` method to make
+   * it purely functional with the correct ZIO error type.
+   * 
+   * Note: You will have to use the `.refineOrDie` method to refine the 
+   * `Throwable` type into something more specific.
    */
   def arrayUpdate[A](a: Array[A], i: Int, f: A => A): ??? = a.update(i, f(a(i))) ?
-
-  /**
-   * Identify the correct method, error, and value type to import
-   * `List#size` safely into the world of pure functional programming.
-   */
-  def size[A](as: List[A]): ??? = as.size ?
 
   /**
    * in order to execute the effectful programs which are described in `ZIO` values,
