@@ -26,7 +26,7 @@ object functions {
   def head2[A]( /* ??? */ ): ??? = ???
 
   def secondChar1(str: String): Char = str.charAt(2)
-  def secondChar2(/* ??? */): Char = ???
+  def secondChar2( /* ??? */ ): Char = ???
 
   /**
    * Non-deterministic => Deterministic

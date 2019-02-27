@@ -12,38 +12,60 @@ import scalaz.zio.internal.{ Platform, PlatformLive }
 import scala.io.Source
 
 /**
- * ZIO[R, E, A] is an immutable data structure
- * that models an effectful program. The program requires an environment `R`,
- * and the program may fail with an error `E` or produce a single `A`.
+ * `ZIO[R, E, A]` is an immutable data structure that models an effectful program.
+ *
+ *  - The program requires an environment `R`
+ *  - The program may fail with an error `E`
+ *  - The program may succeed with a value `A`
  */
 object io_types {
 
   /**
-   * Write the following types in terms of ZIO
+   * Write the following types in terms of the `ZIO` type.
    */
-  //a program that might fail with an error of type E or compute a value of type A
+  /**
+   * A program that might fail with an error of type `E` or succeeds with a
+   * value of type `A`.
+   */
   type FailOrSuccess[E, A] = ???
-  //a program that never fails and produce a value of type A
+
+  /**
+   * A program that never fails and produce a value of type `A`
+   */
   type Success[A] = ???
 
-  //a program that always fails with a value of type E
+  /**
+   * A program that always fails with a value of type `E`
+   */
   type Fail[E] = ???
 
-  //a program that runs forever but might fail with E
+  /**
+   * A program that runs forever but might fail with `E`.
+   */
   type Forever[E] = ???
-  //a program that cannot fail or return a value
+
+  /**
+   * A program that cannot fail or return a value.
+   */
   type NeverStops = ???
 
   /**
-   * Types alias built on ZIO
+   * Types aliases built into ZIO.
    */
-  //a task that may fail with a value of type E or compute a value of type A
+  /**
+   * An effect that may fail with a value of type `E` or compute a value of
+   * type `A`.
+   */
   type IO[E, A] = ???
 
-  //a task that may fail with Throwable or compute a value of type A
+  /**
+   * A task that may fail with `Throwable` or compute a value of type `A`.
+   */
   type Task[A] = ???
 
-  //a task that never fail and return a value of type A
+  /**
+   * An effect that cannot fail but may return a value of type `A`.
+   */
   type UIO[A] = ???
 
 }
@@ -477,8 +499,10 @@ object zio_effects {
    */
   readChunkCB(
     a1 =>
-      readChunkCB(a2 => readChunkCB(a3 => println(s"${a1 ++ a2 ++ a3}"), e3 => println(s"${e3.toString}")),
-                  e2 => println(s"${e2.toString}")),
+      readChunkCB(
+        a2 => readChunkCB(a3 => println(s"${a1 ++ a2 ++ a3}"), e3 => println(s"${e3.toString}")),
+        e2 => println(s"${e2.toString}")
+      ),
     e1 => println(s"${e1.toString}")
   )
 

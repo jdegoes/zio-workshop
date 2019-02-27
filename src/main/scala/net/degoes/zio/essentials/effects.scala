@@ -4,16 +4,17 @@ package net.degoes.zio
 package essentials
 
 object effects {
+
   /**
-   * `Console` is an immutable data structure that describes a console program 
-   * that may involve reading from the console, writing to the console, or 
+   * `Console` is an immutable data structure that describes a console program
+   * that may involve reading from the console, writing to the console, or
    * returning a value.
    */
   sealed trait Console[A] { self =>
     import Console._
-    
+
     /**
-     * Implement `flatMap` for every type of `Console[A]` to turn it into a 
+     * Implement `flatMap` for every type of `Console[A]` to turn it into a
      * `Console[B]` using the function `f`.
      */
     final def flatMap[B](f: A => Console[B]): Console[B] = ???
@@ -65,14 +66,14 @@ object effects {
   /**
    * Using the helper functions, write a program that greets the user by their name.
    */
-  def greetUser(name: String): Console[Unit] = 
+  def greetUser(name: String): Console[Unit] =
     ???
 
   /***
    * Using `flatMap` and the preceding three functions, write a program that
    * asks the user for their name, reads their name, and greets them.
    */
-  val sayHello: Console[Unit] = 
+  val sayHello: Console[Unit] =
     ???
 
   /**
@@ -85,40 +86,44 @@ object effects {
    * implement the following effectful procedure, which interprets
    * the description of a given `Console[A]` into A and run it.
    */
-  def unsafeRun[A](program: Console[A]): A = 
+  def unsafeRun[A](program: Console[A]): A =
     ???
 
   /**
    * implement the following combinator `collectAll` that operates on programs
    */
-  def collectAll[A](programs: List[Console[A]]): Console[List[A]] = 
+  def collectAll[A](programs: List[Console[A]]): Console[List[A]] =
     ???
 
   /**
    * implement the `foreach` function that compute a result for each iteration
    */
-  def foreach[A, B](values: List[A])(body: A => Console[B]): Console[List[B]] = 
+  def foreach[A, B](values: List[A])(body: A => Console[B]): Console[List[B]] =
     ???
 
   /**
-   * Using `Console.writeLine` and `Console.readLine`, map the following 
-   * list of strings into a list of programs, each of which writes a 
+   * Using `Console.writeLine` and `Console.readLine`, map the following
+   * list of strings into a list of programs, each of which writes a
    * question and reads an answer.
    */
-  val questions = 
-    List("What is your name?", "Where where you born?",
-         "Where do you live?", "What is your age?", 
-         "What is your favorite programming language?")
+  val questions =
+    List(
+      "What is your name?",
+      "Where where you born?",
+      "Where do you live?",
+      "What is your age?",
+      "What is your favorite programming language?"
+    )
   val answers: List[Console[String]] = ???
 
   /**
-   * Using `collectAll`, transform `answers` into a program that returns 
+   * Using `collectAll`, transform `answers` into a program that returns
    * a list of strings.
    */
   val answers2: Console[List[String]] = ???
 
   /**
-   * Now using only `questions` and `foreach`, write a program that is 
+   * Now using only `questions` and `foreach`, write a program that is
    * equivalent to `answers2`.
    */
   val answers3: Console[List[String]] = foreach(???) { question =>
@@ -143,7 +148,7 @@ object effects {
    * then make a simple program base on that.
    */
   def printLn(line: String): Thunk[Unit] = ???
-  def readLn: Thunk[String] = ???
+  def readLn: Thunk[String]              = ???
 
   val thunkProgram: Thunk[Unit] = ???
 }
