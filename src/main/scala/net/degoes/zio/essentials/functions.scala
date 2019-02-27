@@ -48,10 +48,6 @@ object functions {
   }
   def computeAge2( /*???*/ ): ??? = ???
 
-  def updateArray1[A](arr: Array[A], i: Int, f: A => A): Unit =
-    arr.update(i, f(arr(i)))
-  def updateArray2[A]( /* ??? */ ): ??? = ???
-
   /**
    * With side effects ---> Free of side effects
    */
@@ -68,22 +64,26 @@ object functions {
   }
   def sumN2( /* ??? */ ): ??? = ???
 
+  def updateArray1[A](arr: Array[A], i: Int, f: A => A): Unit =
+    arr.update(i, f(arr(i)))
+  def updateArray2[A]( /* ??? */ ): ??? = ???
+
   trait CreditCard
-  trait Payment {
+  trait PaymentProcessor {
     def charge(cc: CreditCard, price: Double): Unit
   }
   case class Coffee(sugar: Int) {
     val price = 2.5
   }
 
-  def makeCoffee1(withSugar: Option[Int], p: Payment, cc: CreditCard): Coffee = {
+  def buyCoffee1(withSugar: Option[Int], p: PaymentProcessor, cc: CreditCard): Coffee = {
     val cup =
       withSugar.fold(Coffee(0))(n => Coffee(n))
     p.charge(cc, cup.price)
     cup
   }
   final case class Charge(cc: CreditCard, price: Double)
-  def makeCoffee2( /*???*/ ): ??? = ???
+  def buyCoffee2( /*???*/ ): ??? = ???
 
   trait Draw {
     def goLeft(): Unit
