@@ -18,26 +18,21 @@ import scala.io.Source
  *  - The program may fail with an error `E`
  *  - The program may succeed with a value `A`
  */
-object io_types {
+object zio_types {
 
   /**
    * Write the following types in terms of the `ZIO` type.
    */
   /**
-   * A program that might fail with an error of type `E` or succeeds with a
+   * A program that might fail with an error of type `E` or succeed with a
    * value of type `A`.
    */
   type FailOrSuccess[E, A] = ???
 
   /**
-   * A program that never fails and produce a value of type `A`
+   * A program that never fails and might succeed with a value of type `A`
    */
   type Success[A] = ???
-
-  /**
-   * A program that always fails with a value of type `E`
-   */
-  type Fail[E] = ???
 
   /**
    * A program that runs forever but might fail with `E`.
@@ -45,7 +40,7 @@ object io_types {
   type Forever[E] = ???
 
   /**
-   * A program that cannot fail or return a value.
+   * A program that cannot fail or succeed with a value.
    */
   type NeverStops = ???
 
@@ -53,18 +48,19 @@ object io_types {
    * Types aliases built into ZIO.
    */
   /**
-   * An effect that may fail with a value of type `E` or compute a value of
-   * type `A`.
+   * An effect that may fail with a value of type `E` or succeed with a value 
+   * of type `A`.
    */
   type IO[E, A] = ???
 
   /**
-   * A task that may fail with `Throwable` or compute a value of type `A`.
+   * An effect that may fail with `Throwable` or succeed with a value of 
+   * type `A`.
    */
   type Task[A] = ???
 
   /**
-   * An effect that cannot fail but may return a value of type `A`.
+   * An effect that cannot fail but may succeed with a value of type `A`.
    */
   type UIO[A] = ???
 
@@ -73,29 +69,29 @@ object io_types {
 object zio_values {
 
   /**
-   * Using `ZIO.succeed` method. lift the integer `42` into a ZIO value
-   * and identify the correct type.
+   * Using `ZIO.succeed` method. Construct an effect that succeeds with the 
+   * integer `42`, and ascribe the correct type.
    */
   val ioInt: ??? = ???
 
   /**
-   * Using `ZIO.succeedLazy` method. Lift the bigListString into a ZIO value
-   * and identify the correct type.
+   * Using the `ZIO.succeedLazy` method, construct an effect that succeeds with 
+   * the (lazily evaluated) specified value and ascribe the correct type.
    */
   lazy val bigList       = (1L to 100000000L).toList
   lazy val bigListString = bigList.mkString("\n")
   val ioString: ???      = ???
 
   /**
-   * Using `ZIO.fail` method. lift the string "Incorrect value" into a failed ZIO value
-   * and identify the correct type.
+   * Using the `ZIO.fail` method, construct an effect that fails with the string
+   * "Incorrect value", and ascribe the correct type.
    */
   val incorrectVal: ??? = ???
 
   /**
-   * Using `ZIO.effectTotal` method. wrap Scala's `println` method to import it
-   * into the world of pure functional programming.
-   * and identify the correct ZIO type.
+   * Using the `ZIO.effectTotal` method, construct an effect that wraps Scala 
+   * `println` method, so you have a pure functional version of print line, and
+   * ascribe the correct type.
    */
   def putStrLn(line: String): ??? = println(line) ?
 
@@ -106,7 +102,8 @@ object zio_values {
    * Note: You will have to use the `.refineOrDie` method to refine the 
    * `Throwable` type into something more specific.
    */
-  val getStrLn: ??? = scala.io.StdIn.readLine ?
+  import java.io.IOException
+  val getStrLn: ??? = ???
 
   /**
    * Using the `ZIO.effect` method, wrap Scala's `getLines` to make it 
@@ -125,11 +122,12 @@ object zio_values {
    * Note: You will have to use the `.refineOrDie` method to refine the 
    * `Throwable` type into something more specific.
    */
-  def arrayUpdate[A](a: Array[A], i: Int, f: A => A): ??? = a.update(i, f(a(i))) ?
+  def arrayUpdate[A](a: Array[A], i: Int, f: A => A): ??? = 
+    a.update(i, f(a(i))) ?
 
   /**
-   * in order to execute the effectful programs which are described in `ZIO` values,
-   * you need to interpret them using the `Runtime` in `ZIO`
+   * In order to execute the effectful programs that are described in `ZIO` 
+   * values, you need to interpret them using the `Runtime` in `ZIO`
    * and call `unsafeRun`
    *       or
    * call the main function in `zio.App`
@@ -139,13 +137,6 @@ object zio_values {
     //run sayHelloIO using `unsafeRun`
     val sayHello: Unit = ???
   }
-
-  //run sayHello in `zip.App`
-  object HelloZIO extends scalaz.zio.App {
-    val sayHelloIO: UIO[Unit]                              = putStrLn("Hello ZIO!")
-    override def run(args: List[String]): IO[Nothing, Int] = ???
-  }
-
 }
 
 /**
@@ -173,10 +164,11 @@ object zio_composition {
   val toFailedStr: ??? = IO.fail(42) ?
 
   /**
-   * Using `map` check the precondition `p` in the result of the computation of `io`
+   * Using `flatMap` check the precondition `p` in the result of the computation of `io`
    * and improve the ZIO types in the following input parameters
    */
-  def verify(io: IO[Nothing, Int])(p: Int => Boolean): ??? = ???
+  def verify(io: IO[Nothing, Int])(p: Int => Boolean): ??? = 
+    ???
 
   /**
    * Using `flatMap` and `map` compute the sum of the values of `a` and `b`
@@ -187,20 +179,22 @@ object zio_composition {
   val sum: IO[Nothing, Int] = ???
 
   /**
-   * Using `flatMap` and `map` implement `ifThenElse` which checks the ZIO condition and
-   * returns the following results (ifTrue or ifFalse)
+   * Using `flatMap`, implement `ifThenElse`, which checks the ZIO condition and
+   * returns the result of either `ifTrue` or `ifFalse`.
    *
    * @example
    * val exampleIf: IO[String, String] =
    *      ifThenElse(IO.succeed(true))(ifTrue = IO.succeed("It's true!"), ifFalse = IO.fail("It's false!"))
    */
-  def ifThenElse[E, A](condition: IO[E, Boolean])(ifTrue: IO[E, A], ifFalse: IO[E, A]): IO[E, A] = ???
+  def ifThenElse[E, A](condition: IO[E, Boolean])(ifTrue: IO[E, A], ifFalse: IO[E, A]): IO[E, A] = 
+    ???
 
   /**
-   * Implement `divide` using `ifThenElse`
-   * if (b > 0) it returns a / b otherwise it fails with `DivideByZero`
+   * Implement `divide` using `ifThenElse`. 
+   * if (b != 0), returns `a / b` otherwise, fail with `ArithmeticException`.
    */
-  def divide(a: Int, b: Int): IO[ArithmeticException, Int] = ???
+  def divide(a: Int, b: Int): IO[ArithmeticException, Int] = 
+    ???
 
   /**
    * Using `ifThenElse` implement parseInt that
@@ -240,7 +234,7 @@ object zio_composition {
   def decrementUntilFour1(int: Int): Unit =
     if (int <= 4) ()
     else decrementUntilFour1(int - 1)
-  def decrementUntilFour2(int: IO[Nothing, Int]): IO[Nothing, Unit] = ???
+  def decrementUntilFour2(int: Int): IO[Nothing, Unit] = ???
 
   /**
    * Implement the following loop into its ZIO equivalent.
@@ -248,12 +242,13 @@ object zio_composition {
   def factorial(n: Int): Int =
     if (n <= 1) 1
     else n * factorial(n - 1)
-  def factorialIO(n: UIO[Int]): UIO[Int] = ???
+  def factorialIO(n: Int): UIO[Int] = 
+    ???
 
   /**
    * Make `factorialIO` tail recursion
    */
-  def factorialTailIO( /* ??? */ ): ??? = ???
+  def factorialTailIO(n: Int, acc: Int = 1): UIO[Int] = ???
 
   /**
    * Translate the following program that uses `flatMap` and `map` into
@@ -278,13 +273,12 @@ object zio_composition {
    * Using `zip`
    * combine the result of two effects into a tuple
    */
-  def toTuple(io1: UIO[Int], io2: UIO[Int]): UIO[(Int, Int)] = (io1, io2) ?
+  def toTuple(io1: UIO[Int], io2: UIO[Int]): UIO[(Int, Int)] = ???
 
   /**
-   * Using `zipWith` combine two ios and swap the their values
-   * identify the correct ZIO type
+   * Using `zipWith`, add the two values computed by these effects.
    */
-  val combine: ??? = (IO.succeed(1), IO.succeed("oh No!")) ?
+  val combine: UIO[Int] = UIO.succeed(2).zipWith(UIO.succeed(40))(???)
 
   /**
    * Using `ZIO.foreach`
@@ -306,7 +300,7 @@ object zio_composition {
     else if ((first + last).contains(" ")) "Your name is really weird"
     else "Your name is pretty normal"
 
-  def analyzeName2(first: IO[Nothing, String], last: IO[Nothing, String]): IO[Nothing, String] = ???
+  def analyzeName2(first: UIO[String], last: UIO[String]): UIO[String] = ???
 
   /**
    * Translate the following procedural program into ZIO.
@@ -365,12 +359,12 @@ object zio_failure {
   /**
    * Recover from a division by zero error by using `fold`
    */
-  val recovered1: UIO[Int] = divide1(100, 0) ?
+  val recovered1: UIO[Option[Int]] = divide1(100, 0) ?
 
   /**
-   * Recover from a division by zero error by using `foldM`
+   * Using `foldM`, Print out either an error message or the division.
    */
-  val recovered2: UIO[Int] = divide1(100, 0) ?
+  val recovered2: UIO[Unit] = divide1(100, 0) ?
 
   /**
    * Recover from division by zero error by returning -1 using `either`
@@ -387,8 +381,11 @@ object zio_failure {
    * `secondChoice` only if `firstChoice` fails.
    */
   val firstChoice: IO[ArithmeticException, Int] = divide1(100, 0)
-  val secondChoice: IO[Nothing, Int]            = IO.succeed(400)
-  val combined: IO[Nothing, Int]                = ???
+  val secondChoice: UIO[Int]                    = IO.succeed(400)
+  val combined: UIO[Int]                        = ???
+
+  // io.catchSome
+  // io.catchAll 
 
   /**
    * Using `IO.effectTotal`. Import a synchronous effect with a strange code
@@ -396,7 +393,7 @@ object zio_failure {
   val defect1: UIO[Int] = "this is a short text".charAt(30) ?
 
   /**
-   * Throw an Exception in pure code using `IO.succeed`.
+   * Throw an Exception in pure code using `IO.succeedLazy`.
    */
   val defect2: UIO[Int] = throw new Exception("oh no!") ?
 
@@ -483,11 +480,11 @@ object zio_effects {
    * and choose the correct error type
    */
   val scheduledExecutor = Executors.newScheduledThreadPool(1)
-  def sleep(l: Long, u: TimeUnit): IO[???, ???] =
+  def sleep(l: Long, u: TimeUnit): IO[Nothing, Unit] =
     scheduledExecutor
       .schedule(new Runnable {
         def run(): Unit = ???
-      }, l, u) ?
+      }, l, u) ? 
 
   /**
    * Wrap the following Java callback API, into an `IO` using `IO.effectAsync`
@@ -776,7 +773,7 @@ object zio_resources {
 
 }
 
-object zio_types {
+object zio_environment {
 
   /**
    * The Environments in ZIO
