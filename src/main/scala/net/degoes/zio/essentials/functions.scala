@@ -6,18 +6,15 @@ package essentials
 import java.time.LocalDate
 
 /**
- * Pure functions should be:
- *     Total
- *     Deterministic
- *     Free of side effect
+ * Functions are total, deterministic, and free of side effects.
  */
 object functions {
 
   /**
-   * Turn the following functions into pure functions
+   * Turn the following pseudo-functions into functions.
    */
   /**
-   * Non total --> Total
+   * Partial => Total
    */
   def parseInt1(s: String): Int   = s.toInt
   def parseInt2( /* ??? */ ): ??? = ???
@@ -29,10 +26,10 @@ object functions {
   def head2[A]( /* ??? */ ): ??? = ???
 
   def secondChar1(str: String): Char = str.charAt(2)
-  def secondChar2(/* ??? */): Char = ???
+  def secondChar2( /* ??? */ ): Char = ???
 
   /**
-   * Non deterministic --> Deterministic
+   * Non-deterministic => Deterministic
    */
   def increment1: Int              = scala.util.Random.nextInt(0) + 1
   def increment2( /* ??? */ ): ??? = ???
@@ -48,12 +45,8 @@ object functions {
   }
   def computeAge2( /*???*/ ): ??? = ???
 
-  def updateArray1[A](arr: Array[A], i: Int, f: A => A): Unit =
-    arr.update(i, f(arr(i)))
-  def updateArray2[A]( /* ??? */ ): ??? = ???
-
   /**
-   * With side effects ---> Free of side effects
+   * Side effects => Free of side effects
    */
   def get1(a: Int): Int = {
     println(s"the given of a is: $a")
@@ -68,22 +61,26 @@ object functions {
   }
   def sumN2( /* ??? */ ): ??? = ???
 
+  def updateArray1[A](arr: Array[A], i: Int, f: A => A): Unit =
+    arr.update(i, f(arr(i)))
+  def updateArray2[A]( /* ??? */ ): ??? = ???
+
   trait CreditCard
-  trait Payment {
+  trait PaymentProcessor {
     def charge(cc: CreditCard, price: Double): Unit
   }
   case class Coffee(sugar: Int) {
     val price = 2.5
   }
 
-  def makeCoffee1(withSugar: Option[Int], p: Payment, cc: CreditCard): Coffee = {
+  def buyCoffee1(withSugar: Option[Int], p: PaymentProcessor, cc: CreditCard): Coffee = {
     val cup =
       withSugar.fold(Coffee(0))(n => Coffee(n))
     p.charge(cc, cup.price)
     cup
   }
   final case class Charge(cc: CreditCard, price: Double)
-  def makeCoffee2( /*???*/ ): ??? = ???
+  def buyCoffee2( /*???*/ ): ??? = ???
 
   trait Draw {
     def goLeft(): Unit

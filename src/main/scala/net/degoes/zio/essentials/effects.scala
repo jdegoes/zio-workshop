@@ -4,96 +4,136 @@ package net.degoes.zio
 package essentials
 
 object effects {
-  sealed trait Program[A] { self =>
+
+  /**
+   * `Console` is an immutable data structure that describes a console program
+   * that may involve reading from the console, writing to the console, or
+   * returning a value.
+   */
+  sealed trait Console[A] { self =>
+    import Console._
 
     /**
-     * Implement flatMap for every type of Program[A] to turn it into a Program[B] using the function `f`.
+     * Implement `flatMap` for every type of `Console[A]` to turn it into a
+     * `Console[B]` using the function `f`.
      */
-    final def flatMap[B](f: A => Program[B]): Program[B] = ???
+    final def flatMap[B](f: A => Console[B]): Console[B] = ???
 
-    final def map[B](f: A => B): Program[B] = flatMap(f andThen (Program.succeed(_)))
+    final def map[B](f: A => B): Console[B] = flatMap(f andThen (Console.succeed(_)))
 
-    final def *>[B](that: Program[B]): Program[B] = self.zip(that).map(_._2)
+    final def *>[B](that: Console[B]): Console[B] = (self zip that).map(_._2)
 
-    final def <*[B](that: Program[B]): Program[A] = self.zip(that).map(_._1)
+    final def <*[B](that: Console[B]): Console[A] = (self zip that).map(_._1)
 
     /**
-     * Implement zip using `flatMap` and `map`.
+     * Implement the `zip` function using `flatMap` and `map`.
      */
-    final def zip[B](that: Program[B]): Program[(A, B)] = ???
-
+    final def zip[B](that: Console[B]): Console[(A, B)] = ???
   }
-  object Program {
-    final case class ReadLine[A](next: String => Program[A])      extends Program[A]
-    final case class WriteLine[A](line: String, next: Program[A]) extends Program[A]
-    final case class Return[A](value: () => A)                    extends Program[A]
+  object Console {
+    final case class ReadLine[A](next: String => Console[A])      extends Console[A]
+    final case class WriteLine[A](line: String, next: Console[A]) extends Console[A]
+    final case class Return[A](value: () => A)                    extends Console[A]
 
     /**
-     * Describe the following Programs
+     * Implement the following helper functions:
      */
-    val readLine: Program[String] = ???
-
-    def writeLine(line: String): Program[Unit] = ???
-    def succeed[A](a: => A): Program[A]        = ???
+    final val readLine: Console[String]              = ???
+    final def writeLine(line: String): Console[Unit] = ???
+    final def succeed[A](a: => A): Console[A]        = ???
   }
 
   /**
-   * Write a program that does nothing.
+   * Using the helper functions, write a program that just returns a unit value.
    */
-  val unit: Program[???] = ???
+  val unit: Console[???] = ???
 
   /**
-   * Write a program that returns a pure value 42.
+   * Using the helper functions, write a program that just returns the value 42.
    */
-  val value: Program[???] = ???
+  val fortyTwo: Console[???] = ???
 
   /**
-   * Write a program that asks the user for their name.
+   * Using the helper functions, write a program that asks the user for their name.
    */
-  val askYourName: Program[Unit] = ???
+  val askName: Console[Unit] = ???
 
   /**
-   * Write a program that read the name.
+   * Using the helper functions, write a program that read the name of the user.
    */
-  val name: Program[Unit] = ???
+  val readName: Console[String] = ???
+
+  /**
+   * Using the helper functions, write a program that greets the user by their name.
+   */
+  def greetUser(name: String): Console[Unit] =
+    ???
 
   /***
-   * Using flatMap and map and the existing functions above,
-   * write a program that asks the user for their name and greets them.
+   * Using `flatMap` and the preceding three functions, write a program that
+   * asks the user for their name, reads their name, and greets them.
    */
-  val sayHello: Program[Unit] = ???
-
-  /**
-   * Convert a given int to string
-   */
-  def parseInt(s: String): Program[Option[Int]] = ???
+  val sayHello: Console[Unit] =
+    ???
 
   /**
    * Write a program that reads from the console then parse the given input into int if it possible
    * otherwise it returns None
    */
-  val readInt: Program[???] = ???
+  val readInt: Console[???] = ???
 
   /**
    * implement the following effectful procedure, which interprets
-   * the description of a given `Program[A]` into A and run it.
+   * the description of a given `Console[A]` into A and run it.
    */
-  def unsafeRun[A](program: Program[A]): A = ???
+  def unsafeRun[A](program: Console[A]): A =
+    ???
 
   /**
    * implement the following combinator `collectAll` that operates on programs
    */
-  def collectAll[A](programs: Seq[Program[A]]): Program[List[A]] = ???
+  def collectAll[A](programs: List[Console[A]]): Console[List[A]] =
+    ???
 
   /**
    * implement the `foreach` function that compute a result for each iteration
    */
-  def foreach[A, B](values: Iterable[A])(body: A => Program[B]): Program[List[B]] = ???
+  def foreach[A, B](values: List[A])(body: A => Console[B]): Console[List[B]] =
+    ???
+
+  /**
+   * Using `Console.writeLine` and `Console.readLine`, map the following
+   * list of strings into a list of programs, each of which writes a
+   * question and reads an answer.
+   */
+  val questions =
+    List(
+      "What is your name?",
+      "Where where you born?",
+      "Where do you live?",
+      "What is your age?",
+      "What is your favorite programming language?"
+    )
+  val answers: List[Console[String]] = ???
+
+  /**
+   * Using `collectAll`, transform `answers` into a program that returns
+   * a list of strings.
+   */
+  val answers2: Console[List[String]] = ???
+
+  /**
+   * Now using only `questions` and `foreach`, write a program that is
+   * equivalent to `answers2`.
+   */
+  val answers3: Console[List[String]] = foreach(???) { question =>
+    ???
+  }
 
   /**
    * Implement the methods of Thunk
    */
-  class Thunk[A](val run: () => A) {
+  class Thunk[A](val unsafeRun: () => A) {
     def map[B](ab: A => B): Thunk[B]             = ???
     def flatMap[B](afb: A => Thunk[B]): Thunk[B] = ???
     def attempt: Thunk[Either[Throwable, A]]     = ???
@@ -104,8 +144,11 @@ object effects {
   }
 
   /**
- * Build the version of printLn and readLn
- * then make a program base on that
- */
+   * Build the version of printLn and readLn
+   * then make a simple program base on that.
+   */
+  def printLn(line: String): Thunk[Unit] = ???
+  def readLn: Thunk[String]              = ???
 
+  val thunkProgram: Thunk[Unit] = ???
 }
