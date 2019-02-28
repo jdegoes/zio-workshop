@@ -808,31 +808,44 @@ object zio_environment {
 }
 
 object zio_dependency_management {
+  import scalaz.zio.console
+  import scalaz.zio.console.Console 
+  import scalaz.zio.clock
+  import scalaz.zio.clock.Clock
+  import scalaz.zio.system
+  import scalaz.zio.system.System
+  import java.io.IOException
 
   /**
-   * Using `zio.console.getStrLn`. implement `getStrLn`
-   * and identify the correct ZIO type.
+   * Using `zio.console.getStrLn`, implement `getStrLn` and identify the 
+   * correct type for the ZIO effect.
    */
   val getStrLn: ZIO[???, ???, ???] = ???
 
   /**
-   * Using `zio.console.getStrLn`. implement `putStrLn`
-   * and identify the correct ZIO type.
+   * Using `zio.console.putStrLn`, implement `putStrLn` and identify the 
+   * correct type for the ZIO effect.
    */
   def putStrLn(line: String): ZIO[???, ???, ???] = ???
 
   /**
-   * Identify the correct method and error type to import `System.nanoTime`
-   * safely into the world of pure functional programming.
+   * Using `scalaz.zio.clock.nanoTime`, implement `nanoTime` and identity the 
+   * correct type for the ZIO effect.
    */
-  val nanoTime: ZIO[???, ???, ???] = System.nanoTime() ?
+  val nanoTime: ZIO[???, ???, ???] = ???
 
   /**
-   * Identify the correct method, error, and value type to import `System.exit`
-   * safely into the world of pure functional programming.
+   * Using `scalaz.zio.system`, implement `env` and identify the correct
+   * type for the ZIO effect.
    */
-  def sysExit(code: Int): ZIO[???, ???, ???] =
-    System.exit(code) ?
+  def env(property: String): ZIO[???, ???, ???] = ???
+
+  /**
+   * Call three of the preceding methods inside the following `for` 
+   * comprehension and identify the correct type for the ZIO effect.
+   */
+  val program: ZIO[???, ???, ???] = 
+    ???
 
   /**
    * Build a new Service called `Configuration`
@@ -843,58 +856,68 @@ object zio_dependency_management {
    * - implement all helper functions.
    */
   //Module
-  trait Configuration {
-    val configuration: ???
+  import system.System 
+
+  trait Config {
+    val config: ???
   }
 
-  object Configuration {
-    //service: definition of the methods
+  object Config {
+    // Service: definition of the methods provided by module:
     trait Service[R] {
-      val port: ???
-      val host: ???
+      val port: ZIO[R, Nothing, Int]
+      val host: ZIO[R, Nothing, String]
     }
-    //implementation
-    trait Live extends Configuration {
-      val configuration: ??? = ???
+    // Production module implementation:
+    trait Live extends Config {
+      val config: ??? = ???
     }
     object Live extends Live
   }
+
   //Helpers
-  object configuration_ extends Configuration.Service[Configuration] {
+  object config_ extends Config.Service[Config] {
 
     /**
-     * Access to the environment `Configuration` using `accessM`
+     * Access to the environment `Config` using `accessM`
      */
-    override val port: ??? = ???
-    override val host: ??? = ???
+    override val port = ???
+    override val host = ???
   }
+  import config_._ 
 
-  object Main extends Runtime[Configuration] {
+  /**
+   * Write a program that depends on `Config` and `Console` and use the Scala 
+   * compiler to infer the correct type.
+   */
+  val configProgram: ZIO[Config with Console, ???, ???] = ???
 
-    /**
-     * The platform of the runtime, which provides the essential capabilities
-     * necessary to bootstrap execution of tasks.
-     */
-    override val Platform: Platform = PlatformLive.Default
+  /**
+   * Give the `configProgram` its dependencies by supplying it with both `Config`
+   * and `Console` modules, and determine the type of the resulting effect.
+   */
+  configProgram.provide(???)
 
-    /**
-     * Add the environment that you will need to provide following the exercises.
-     */
-    override val Environment: ??? = ???
+  /**
+   * Create a `Runtime[Config with Console]` that can be used to run any 
+   * effect that has a dependency on `Config`:
+   */
+  val ConfigRuntime: Runtime[Config with Console] = 
+    Runtime(??? : Config with Console, PlatformLive.Default)
 
-    /**
-     * Define a ZIO value that describes an effect which uses Configuration with Console that display
-     * the port and host in the Console and fails with a String if the host name contains `:`
-     */
-    val program: ZIO[???, String, Unit] = ???
+  /**
+   * Define a ZIO value that describes an effect which uses Config with 
+   * Console that displays the port and host in the Console and fails 
+   * with a String if the host name contains `:`
+   */
+  val simpleConfigProgram: ZIO[Config, String, Unit] = ???
 
-    /**
-     * run the `program` using `unsafeRun`
-     * @note When you call unsafeRun the Runtime will provide all the environment that you defined above
-     *       when you give a wrong Environment, you will get compile errors.
-     */
-    val run: ??? = program ?
-  }
+  /**
+   * run the `program` using `unsafeRun`
+   * @note When you call unsafeRun the Runtime will provide all the environment that you defined above
+   *       when you give a wrong Environment, you will get compile errors.
+   */
+  val run: ??? = simpleConfigProgram ?
 
   /**
    * Build a file system service
@@ -905,9 +928,10 @@ object zio_dependency_management {
   }
 
   object FileSystem {
-    //service: definition of the methods
+    // Service: definition of the methods of the module:
     trait Service[R] {}
-    //implementation
+    
+    // Production implementation of the module:
     trait Live extends FileSystem {
       val filesystem: ??? = ???
     }

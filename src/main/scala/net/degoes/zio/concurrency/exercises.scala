@@ -504,7 +504,7 @@ object zio_semaphore {
    * Acquire one permit and release it using `Semaphore#release`.
    * How much permit are available?
    */
-  val nbAvailable3: UIO[Unit] =
+  val nbAvailable3: UIO[Long] =
     for {
       semaphore <- Semaphore.make(5)
       _         <- (??? : UIO[Unit])
