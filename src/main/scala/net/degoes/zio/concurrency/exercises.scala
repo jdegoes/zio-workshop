@@ -214,9 +214,9 @@ object zio_parallelism {
 object zio_ref {
 
   /**
-   * Using `Ref.apply` constructor, create a `Ref` that is initially `0`.
+   * Using `Ref.make` constructor, create a `Ref` that is initially `0`.
    */
-  val makeZero: UIO[Ref[Int]] = Ref(0)
+  val makeZero: UIO[Ref[Int]] = 0 ?
 
   /**
    * Using `Ref#get` and `Ref#set`, change the
@@ -333,7 +333,7 @@ object zio_promise {
   /**
    * Using `await` retrieve a value computed from inside another fiber
    */
-  val handoff1: ZIO[Console, Nothing, Int] =
+  val handoff1: ZIO[Console with Clock, Nothing, Int] =
     for {
       promise <- Promise.make[Nothing, Int]
       _       <- (clock.sleep(10.seconds) *> promise.succeed(42)).fork
@@ -345,7 +345,7 @@ object zio_promise {
   /**
    * Using `await`. retrieve a value from a promise that was failed in another fiber.
    */
-  val handoff2: ZIO[Console, Error, Int] =
+  val handoff2: ZIO[Console with Clock, Error, Int] =
     for {
       promise <- Promise.make[Error, Int]
       _       <- (clock.sleep(10.seconds) *> promise.fail(new Error("Uh oh!"))).fork
@@ -425,7 +425,7 @@ object zio_queue {
   case class Increment(amount: Int) extends Message
   val makeCounter: UIO[Message => UIO[Int]] =
     for {
-      counter <- Ref(0)
+      counter <- Ref.make(0)
       mailbox <- Queue.bounded[(Message, Promise[Nothing, Int])](100)
       _       <- (mailbox.take ? : UIO[Fiber[Nothing, Nothing]])
     } yield { (message: Message) =>
@@ -451,7 +451,7 @@ object zio_queue {
   val offer4TakeAllS: UIO[List[Int]] = for {
     queue  <- Queue.sliding[Int](3)
     _      <- queue.offerAll(List(1, 2, 3))
-    values <- ???
+    values <- (??? : UIO[List[Int]])
   } yield values
 
   /**
@@ -466,7 +466,7 @@ object zio_queue {
   val offer4TakeAllD: UIO[List[Int]] = for {
     queue  <- Queue.sliding[Int](3)
     _      <- queue.offerAll(List(1, 2, 3))
-    values <- ???
+    values <- (??? : UIO[List[Int]])
   } yield values
 
 }
