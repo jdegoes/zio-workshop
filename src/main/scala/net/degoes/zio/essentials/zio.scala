@@ -48,13 +48,13 @@ object zio_types {
    * Types aliases built into ZIO.
    */
   /**
-   * An effect that may fail with a value of type `E` or succeed with a value 
+   * An effect that may fail with a value of type `E` or succeed with a value
    * of type `A`.
    */
   type IO[E, A] = ???
 
   /**
-   * An effect that may fail with `Throwable` or succeed with a value of 
+   * An effect that may fail with `Throwable` or succeed with a value of
    * type `A`.
    */
   type Task[A] = ???
@@ -69,13 +69,13 @@ object zio_types {
 object zio_values {
 
   /**
-   * Using `ZIO.succeed` method. Construct an effect that succeeds with the 
+   * Using `ZIO.succeed` method. Construct an effect that succeeds with the
    * integer `42`, and ascribe the correct type.
    */
   val ioInt: ??? = ???
 
   /**
-   * Using the `ZIO.succeedLazy` method, construct an effect that succeeds with 
+   * Using the `ZIO.succeedLazy` method, construct an effect that succeeds with
    * the (lazily evaluated) specified value and ascribe the correct type.
    */
   lazy val bigList       = (1L to 100000000L).toList
@@ -89,44 +89,44 @@ object zio_values {
   val incorrectVal: ??? = ???
 
   /**
-   * Using the `ZIO.effectTotal` method, construct an effect that wraps Scala 
+   * Using the `ZIO.effectTotal` method, construct an effect that wraps Scala
    * `println` method, so you have a pure functional version of print line, and
    * ascribe the correct type.
    */
   def putStrLn(line: String): ??? = println(line) ?
 
   /**
-   * Using the `ZIO.effect` method, wrap Scala's `readLine` method to make it 
+   * Using the `ZIO.effect` method, wrap Scala's `readLine` method to make it
    * purely functional with the correct ZIO error type.
-   * 
-   * Note: You will have to use the `.refineOrDie` method to refine the 
+   *
+   * Note: You will have to use the `.refineOrDie` method to refine the
    * `Throwable` type into something more specific.
    */
   import java.io.IOException
   val getStrLn: ??? = ???
 
   /**
-   * Using the `ZIO.effect` method, wrap Scala's `getLines` to make it 
+   * Using the `ZIO.effect` method, wrap Scala's `getLines` to make it
    * purely functional with the correct ZIO error type.
-   * 
-   * Note: You will have to use the `.refineOrDie` method to refine the 
+   *
+   * Note: You will have to use the `.refineOrDie` method to refine the
    * `Throwable` type into something more specific.
    */
-  def readFile(file: File): IO[???, List[String]] = 
+  def readFile(file: File): IO[???, List[String]] =
     Source.fromFile(file).getLines.toList ?
 
   /**
    * Using the `ZIO.effect` method, wrap Scala's `Array#update` method to make
    * it purely functional with the correct ZIO error type.
-   * 
-   * Note: You will have to use the `.refineOrDie` method to refine the 
+   *
+   * Note: You will have to use the `.refineOrDie` method to refine the
    * `Throwable` type into something more specific.
    */
-  def arrayUpdate[A](a: Array[A], i: Int, f: A => A): ??? = 
+  def arrayUpdate[A](a: Array[A], i: Int, f: A => A): ??? =
     a.update(i, f(a(i))) ?
 
   /**
-   * In order to execute the effectful programs that are described in `ZIO` 
+   * In order to execute the effectful programs that are described in `ZIO`
    * values, you need to interpret them using the `Runtime` in `ZIO`
    * and call `unsafeRun`
    *       or
@@ -167,7 +167,7 @@ object zio_composition {
    * Using `flatMap` check the precondition `p` in the result of the computation of `io`
    * and improve the ZIO types in the following input parameters
    */
-  def verify(io: IO[Nothing, Int])(p: Int => Boolean): ??? = 
+  def verify(io: IO[Nothing, Int])(p: Int => Boolean): ??? =
     ???
 
   /**
@@ -186,14 +186,14 @@ object zio_composition {
    * val exampleIf: IO[String, String] =
    *      ifThenElse(IO.succeed(true))(ifTrue = IO.succeed("It's true!"), ifFalse = IO.fail("It's false!"))
    */
-  def ifThenElse[E, A](condition: IO[E, Boolean])(ifTrue: IO[E, A], ifFalse: IO[E, A]): IO[E, A] = 
+  def ifThenElse[E, A](condition: IO[E, Boolean])(ifTrue: IO[E, A], ifFalse: IO[E, A]): IO[E, A] =
     ???
 
   /**
-   * Implement `divide` using `ifThenElse`. 
+   * Implement `divide` using `ifThenElse`.
    * if (b != 0), returns `a / b` otherwise, fail with `ArithmeticException`.
    */
-  def divide(a: Int, b: Int): IO[ArithmeticException, Int] = 
+  def divide(a: Int, b: Int): IO[ArithmeticException, Int] =
     ???
 
   /**
@@ -242,7 +242,7 @@ object zio_composition {
   def factorial(n: Int): Int =
     if (n <= 1) 1
     else n * factorial(n - 1)
-  def factorialIO(n: Int): UIO[Int] = 
+  def factorialIO(n: Int): UIO[Int] =
     ???
 
   /**
@@ -385,7 +385,7 @@ object zio_failure {
   val combined: UIO[Int]                        = ???
 
   // io.catchSome
-  // io.catchAll 
+  // io.catchAll
 
   /**
    * Using `IO.effectTotal`. Import a synchronous effect with a strange code
@@ -484,7 +484,7 @@ object zio_effects {
     scheduledExecutor
       .schedule(new Runnable {
         def run(): Unit = ???
-      }, l, u) ? 
+      }, l, u) ?
 
   /**
    * Wrap the following Java callback API, into an `IO` using `IO.effectAsync`
