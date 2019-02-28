@@ -930,7 +930,7 @@ object zio_dependency_management {
   object FileSystem {
     // Service: definition of the methods of the module:
     trait Service[R] {}
-    
+
     // Production implementation of the module:
     trait Live extends FileSystem {
       val filesystem: ??? = ???
@@ -941,11 +941,33 @@ object zio_dependency_management {
   object filesystem_ extends FileSystem.Service[FileSystem] {}
 
   /**
-   * Build a query service
+   * Write an effect that uses `FileSystem with Console`.
    */
+  val fileProgram: ZIO[FileSystem with Console, ???, ???] = ???
 
   /**
- * Build a Mock file system
- * and test your code
- */
+   * Create a `Runtime` that can execute effects that require 
+   * `FileSystem with Console`.
+   */
+  val FSRuntime: Runtime[FileSystem with Console] = ???
+
+  /**
+   * Execute `fileProgram` using `FSRuntime`.
+   */
+  lazy val fileProgramLive: ??? = FSRuntime.unsafeRun(fileProgram)
+
+  /**
+   * Implement a mock file system module.
+   */
+  trait MockFileSystem extends FileSystem {
+    val filesystem = ???
+  }
+
+  /**
+   * Using `ZIO#provide` with the mock file system module, and a default 
+   * runtime, execute `fileProgram`.
+   */
+  lazy val fileProgramTest: ??? = new DefaultRuntime {}.unsafeRun {
+    fileProgram.provide(???)
+  }
 }
