@@ -809,7 +809,7 @@ object zio_environment {
 
 object zio_dependency_management {
   import scalaz.zio.console
-  import scalaz.zio.console.Console 
+  import scalaz.zio.console.Console
   import scalaz.zio.clock
   import scalaz.zio.clock.Clock
   import scalaz.zio.system
@@ -817,19 +817,19 @@ object zio_dependency_management {
   import java.io.IOException
 
   /**
-   * Using `zio.console.getStrLn`, implement `getStrLn` and identify the 
+   * Using `zio.console.getStrLn`, implement `getStrLn` and identify the
    * correct type for the ZIO effect.
    */
   val getStrLn: ZIO[???, ???, ???] = ???
 
   /**
-   * Using `zio.console.putStrLn`, implement `putStrLn` and identify the 
+   * Using `zio.console.putStrLn`, implement `putStrLn` and identify the
    * correct type for the ZIO effect.
    */
   def putStrLn(line: String): ZIO[???, ???, ???] = ???
 
   /**
-   * Using `scalaz.zio.clock.nanoTime`, implement `nanoTime` and identity the 
+   * Using `scalaz.zio.clock.nanoTime`, implement `nanoTime` and identity the
    * correct type for the ZIO effect.
    */
   val nanoTime: ZIO[???, ???, ???] = ???
@@ -841,10 +841,10 @@ object zio_dependency_management {
   def env(property: String): ZIO[???, ???, ???] = ???
 
   /**
-   * Call three of the preceding methods inside the following `for` 
+   * Call three of the preceding methods inside the following `for`
    * comprehension and identify the correct type for the ZIO effect.
    */
-  val program: ZIO[???, ???, ???] = 
+  val program: ZIO[???, ???, ???] =
     ???
 
   /**
@@ -856,7 +856,7 @@ object zio_dependency_management {
    * - implement all helper functions.
    */
   //Module
-  import system.System 
+  import system.System
 
   trait Config {
     val config: ???
@@ -884,10 +884,10 @@ object zio_dependency_management {
     override val port = ???
     override val host = ???
   }
-  import config_._ 
+  import config_._
 
   /**
-   * Write a program that depends on `Config` and `Console` and use the Scala 
+   * Write a program that depends on `Config` and `Console` and use the Scala
    * compiler to infer the correct type.
    */
   val configProgram: ZIO[Config with Console, ???, ???] = ???
@@ -899,15 +899,15 @@ object zio_dependency_management {
   configProgram.provide(???)
 
   /**
-   * Create a `Runtime[Config with Console]` that can be used to run any 
+   * Create a `Runtime[Config with Console]` that can be used to run any
    * effect that has a dependency on `Config`:
    */
-  val ConfigRuntime: Runtime[Config with Console] = 
+  val ConfigRuntime: Runtime[Config with Console] =
     Runtime(??? : Config with Console, PlatformLive.Default)
 
   /**
-   * Define a ZIO value that describes an effect which uses Config with 
-   * Console that displays the port and host in the Console and fails 
+   * Define a ZIO value that describes an effect which uses Config with
+   * Console that displays the port and host in the Console and fails
    * with a String if the host name contains `:`
    */
   val simpleConfigProgram: ZIO[Config, String, Unit] = ???
@@ -946,7 +946,7 @@ object zio_dependency_management {
   val fileProgram: ZIO[FileSystem with Console, ???, ???] = ???
 
   /**
-   * Create a `Runtime` that can execute effects that require 
+   * Create a `Runtime` that can execute effects that require
    * `FileSystem with Console`.
    */
   val FSRuntime: Runtime[FileSystem with Console] = ???
@@ -964,7 +964,7 @@ object zio_dependency_management {
   }
 
   /**
-   * Using `ZIO#provide` with the mock file system module, and a default 
+   * Using `ZIO#provide` with the mock file system module, and a default
    * runtime, execute `fileProgram`.
    */
   lazy val fileProgramTest: ??? = new DefaultRuntime {}.unsafeRun {
