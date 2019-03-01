@@ -602,7 +602,7 @@ object zio_stream {
   val stream2: Stream[Any, Nothing, Int] = ???
 
   /**
-   * Create a stream using `Stream.fromQueue`
+   * Make a queue and use it to create a stream using `Stream.fromQueue`
    */
   val stream3: UIO[Stream[Any, Nothing, Int]] = ???
 
