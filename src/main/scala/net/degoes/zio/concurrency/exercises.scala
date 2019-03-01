@@ -44,16 +44,16 @@ object zio_fibers {
    * Print in the console forever without blocking the main Fiber
    *  Identify the correct types (!)
    */
-  val putStrLForeverF: UIO[Fiber[???, ???]] = console.putStrLn("Hello ZIO") ?
+  val putStrLForeverF: ZIO[Console, Nothing, Fiber[???, ???]] = 
+    console.putStrLn("Hello ZIO") ?
 
   /**
    * Get the value of the following Fibers using `Fiber#join`
    * Identify the correct types.
    */
   val fiber1: IO[???, ???] = Fiber.succeed[Nothing, Int](1) ?
-  val fiber2: IO[???, ???] = Fiber.lift(IO.succeed("run forever").forever) ?
-  val fiber3: IO[???, ???] = Fiber.fail[Int](1) ?
-  val fiber4: IO[???, ???] = Fiber.fail[Exception](new Exception("error!")) ?
+  val fiber2: IO[???, ???] = Fiber.fail[Int](1) ?
+  val fiber3: IO[???, ???] = Fiber.fail[Exception](new Exception("error!")) ?
 
   /**
    * Using `await` suspend the awaiting fibers until the result will be ready and
@@ -78,7 +78,8 @@ object zio_fibers {
    * Using `flatMap` and `interrupt` to interrupt the fiber `putStrLForeverF`
    * Identify the correct types
    */
-  val interruptedF: UIO[Exit[???, ???]] = putStrLForeverF ?
+  val interruptedF: ZIO[Console, Nothing, Exit[???, ???]] = 
+    putStrLForeverF ?
 
   /**
    * Write a program that asks 2 users for their name and greets them concurrently,
@@ -86,7 +87,8 @@ object zio_fibers {
    * Use for-comprehension or `flatMap` and `map`.
    *  Identify the correct types
    */
-  val sayHello: ZIO[???, ???, Unit]     = ???
+  val sayHello: ZIO[???, ???, Unit]     = 
+    ???
   val sayHelloBoth: ZIO[???, ???, Unit] = sayHello ?
 
   /**
@@ -141,7 +143,8 @@ object zio_parallelism {
   def findFirstAndLast(as: List[User])(p: LocalDate => Boolean): ??? = {
     val findFirst: UIO[Option[User]] = Task.effectTotal(as.find(user => p(user.subscription)))
     val findLast: UIO[Option[User]]  = Task.effectTotal(as.reverse.find(user => p(user.subscription)))
-    (findFirst, findLast) ?
+    
+    ???
   }
 
   /**
@@ -162,7 +165,18 @@ object zio_parallelism {
    * in parallel.
    * Identify the correct ZIO type.
    */
-  def printAll(users: List[IO[String, List[User]]]): ??? = ???
+  def printAll(users: List[User]): ??? = ???
+
+  def fib(n: Int): UIO[BigInt] = 
+    if (n <= 1) UIO.succeed(BigInt(n))
+    else fib(n -  1).zipWith(fib(n - 2))(_ + _)
+
+  /**
+   * Compute the first 20 fibonacci numbers in parallel.
+   */
+  val firstTwentyFibs: UIO[List[BigInt]] = 
+    ???
+
 
   /**
    * Using `ZIO.foreachPar`. Write a program that compute the sum of action1, action2 and action3
@@ -179,13 +193,16 @@ object zio_parallelism {
   def printAll_(users: List[IO[String, List[User]]]): ??? = ???
 
   /**
-   * Using `ZIO#race`. Race `leftContestent1` and `rightContestent1` to see
-   * which one finishes first with a successful value.
-   * Identify the correct ZIO type
+   * Using `ZIO#race`. Race queries against primary and secondary databases
+   * to return whichever one succeeds first.
    */
-  val leftContestent1: UIO[Nothing]                 = IO.never
-  val rightContestent1: ZIO[Console, Nothing, Unit] = putStrLn("Hello World")
-  val raced1: ???                                   = ???
+  sealed trait Database 
+  object Database {
+    case object Primary extends Database 
+    case object Secondary extends Database
+  }
+  def getUserById(userId: Int, db: Database): Task[User] = ???
+  def getUserById(userId: Int): Task[User] = ???
 
   /**
    * Using `raceAttempt` Race `leftContestent1` and `rightContestent1` to see
@@ -240,10 +257,22 @@ object zio_ref {
     } yield value
 
   /**
-   * Using the `Ref#modify` to atomically increment the value by 10,
-   * but return the old value.
+   * Refactor this contentious code to be atomic using `Ref#update`.
    */
-  val atomicallyIncrementedBy10PlusGet: UIO[Int] =
+  def makeContentious1(n: Int): UIO[Fiber[Nothing, List[Nothing]]] = 
+    Ref.make(0).flatMap(ref =>
+      IO.forkAll(List.fill(n)(ref.get.flatMap(value =>
+        ref.set(value + 10)
+      ).forever))
+    )
+  def makeContentious2(n: Int): UIO[Fiber[Nothing, List[Nothing]]] = 
+    ???
+
+  /**
+   * Using the `Ref#modify` to atomically increment the value by 10,
+   * but return the old value, converted to a string.
+   */
+  val atomicallyIncrementedBy10PlusGet: UIO[String] =
     for {
       ref   <- makeZero
       value <- ref.modify(v => (???, v + 10))
@@ -257,7 +286,8 @@ object zio_ref {
   case object Active extends State
   case object Closed extends State
 
-  def setActive(ref: Ref[State], boolean: Boolean): UIO[State] = ???
+  def setActive(ref: Ref[State], boolean: Boolean): UIO[State] = 
+    ???
 
   /**
    * Using `Ref#modifySome` change the state to Closed only if the state was Active and return true
@@ -322,7 +352,8 @@ object zio_promise {
     } yield completed
 
   /**
-   * Make a promise that might fail with `Error`or produce a value of type `Int` and interrupt it using `interrupt`
+   * Make a promise that might fail with `Error`or produce a value of type 
+   * `Int` and interrupt it using `interrupt`.
    */
   val interrupted: UIO[Boolean] =
     for {
@@ -358,16 +389,17 @@ object zio_promise {
    * Using `await`. Try to retrieve a value from a promise
    * that was interrupted in another fiber.
    */
-  val handoff3: ZIO[Clock, Error, Int] =
+  val handoff3: ZIO[Clock with Console, Nothing, Int] =
     for {
-      promise <- Promise.make[Error, Int]
+      promise <- Promise.make[Nothing, Int]
       _       <- promise.interrupt.delay(10.milliseconds).fork
-      value   <- (promise ? : IO[Error, Int])
+      value   <- (promise ? : IO[Nothing, Int])
+      _       <- putStrLn("This line will NEVER be executed")
     } yield value
 
   /**
- * Build auto-refreshing cache using `Ref`and `Promise`
- */
+   * Build auto-refreshing cache using `Ref`and `Promise`
+   */
 }
 
 object zio_queue {
@@ -375,8 +407,11 @@ object zio_queue {
   /**
    * Using `Queue.bounded`, create a queue for `Int` values with a capacity of 10
    */
-  val makeQueue: UIO[Queue[Int]] = ???
+  val makeQueue: UIO[Queue[Int]] = Queue.bounded[Int](10)
 
+  /**
+   * Place `42` into the queue using `Queue#offer`.
+   */
   val offered1: UIO[Unit] =
     for {
       queue <- makeQueue
@@ -408,13 +443,13 @@ object zio_queue {
   /**
    * In a child fiber, read infintely many values out of the queue and write
    * them to the console. In the main fiber, write 100 values into the queue,
-   * using `ZIO.foreach` on a `List` containing `queue.offer` programs.
+   * using `ZIO.foreach` on a `List`.
    */
-  val infiniteReader1: UIO[List[Unit]] =
+  val infiniteReader1: ZIO[Console, Nothing, List[Boolean]] =
     for {
-      queue <- makeQueue
-      _     <- (??? : IO[Exception, Nothing]).fork
-      vs    <- (??? : UIO[List[Unit]])
+      queue <- Queue.bounded[String](10)
+      _     <- (??? : ZIO[Console, Nothing, Nothing]).fork
+      vs    <- (??? : UIO[List[Boolean]])
     } yield vs
 
   /**
@@ -524,6 +559,27 @@ object zio_semaphore {
       _         <- semaphore.acquire.delay(1.second).fork
       msg       <- p.await
     } yield msg
+
+
+  /**
+   * Implement `createAcceptor` to create a connection acceptor that will 
+   * accept at most the specified number of connections.
+   */
+  trait Request 
+  trait Response
+  type Handler = Request => UIO[Response]
+  lazy val defaultHandler: Handler = ???
+  def startWebServer(handler: Handler): UIO[Nothing] = 
+    // Pretend this is implemented.
+    ???
+  def limitedHandler(limit: Int, handler: Handler): UIO[Handler] = 
+    ???
+  val webServer1k: UIO[Nothing] = 
+    for {
+      acceptor <- limitedHandler(1000, defaultHandler)
+      value    <- startWebServer(acceptor)
+    } yield value
+
 }
 
 object zio_stream {
