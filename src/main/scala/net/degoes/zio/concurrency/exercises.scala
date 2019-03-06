@@ -579,7 +579,6 @@ object zio_semaphore {
       acceptor <- limitedHandler(1000, defaultHandler)
       value    <- startWebServer(acceptor)
     } yield value
-
 }
 
 object zio_stream {
@@ -617,17 +616,19 @@ object zio_stream {
    * using `Stream#unfold`
    */
   val stream5: Stream[Any, Nothing, Int] = ???
+  
+  /**
+   * Using `Stream.unfoldM`, create a stream of lines of input from the user, 
+   * terminating when the user enters the command "exit" or "quit".
+   */
+  import java.io.IOException
+  import scalaz.zio.console.getStrLn
+  val stream6: Stream[Console, IOException, String] = ???
 
   /**
-   * Create a stream of ints that starts from 0 until 42,
-   * using `Stream#unfoldM`
+   * Using `withEffect` log every element.
    */
-  val stream6: Stream[Any, Nothing, Int] = ???
-
-  /**
-   * Using `withEffect` add one to every element
-   */
-  val addOne: Stream[Any, Nothing, Int] = stream1 ?
+  val loggedInts: Stream[Console, Nothing, Int] = stream1 ?
 
   /**
    * Using `Stream#filter` filter the even numbers
@@ -642,7 +643,7 @@ object zio_stream {
   /**
    * Print out each value in the stream using `Stream#foreach`
    */
-  val printAll: Stream[Any, Nothing, Unit] = stream1 ?
+  val printAll: ZIO[Console, Nothing, Unit] = stream1 ?
 
   /**
    * Convert every Int into String using `Stream#map`
@@ -722,7 +723,8 @@ object zio_schedule {
   /**
    * Using `Schedule.exponential`, create an exponential schedule that starts from 10 milliseconds.
    */
-  val exponentialSchedule: Schedule[Any, Any, Duration] = ???
+  val exponentialSchedule: Schedule[Any, Any, Duration] = 
+    ???
 
   /**
    * Using `Schedule.jittered` produced a jittered version of
@@ -738,7 +740,7 @@ object zio_schedule {
 
   /**
    * Using `Schedule.identity`, produce a schedule that recurs forever,
-   * returning its inputs.
+   * without delay, returning its inputs.
    */
   def inputs[A]: Schedule[Any, A, A] = ???
 
@@ -746,8 +748,8 @@ object zio_schedule {
    * Using `Schedule#collect`, produce a schedule that recurs
    * forever, collecting its inputs into a list.
    */
-  def collectedInputs[A]: Schedule[Any, Any, List[A]] =
-    Schedule.identity[A].collect ?
+  def collectedInputs[A]: Schedule[Any, A, List[A]] =
+    Schedule.identity[A] ?
 
   /**
    * Using  `*>`, combine `fiveTimes` and `everySecond` but return the output of `everySecond`.
@@ -758,7 +760,10 @@ object zio_schedule {
    * Produce a jittered schedule that first does exponential spacing (starting
    * from 10 milliseconds), but then after the spacing reaches 60 seconds,
    * switches over to fixed spacing of 60 seconds between recurrences, but will
-   * only do that for up to 100 times, and produce a list of the results.
+   * only do that for up to 100 times, and produce a list of the inputs to 
+   * the schedule.
    */
-  def mySchedule[A]: Schedule[Any, A, List[A]] = ???
+  import scalaz.zio.random.Random
+  def mySchedule[A]: Schedule[Clock with Random, A, List[A]] = 
+    ???
 }
