@@ -59,12 +59,12 @@ object effects {
   val askName: Console[Unit] = ???
 
   /**
-   * Using the helper functions, write a program that read the name of the user.
+   * Using the helper functions, write a program that reads the name of the user.
    */
   val readName: Console[String] = ???
 
   /**
-   * Using the helper functions, write a program that greets the user by their name.
+   * Write a function that greets the user by the specified name.
    */
   def greetUser(name: String): Console[Unit] =
     ???
@@ -83,28 +83,32 @@ object effects {
   val readInt: Console[???] = ???
 
   /**
-   * implement the following effectful procedure, which interprets
-   * the description of a given `Console[A]` into A and run it.
+   * Implement the following effectful procedure, which effectfully interprets
+   * the description of a given `Console[A]` into an `A`.
    */
   def unsafeRun[A](program: Console[A]): A =
     ???
 
   /**
-   * implement the following combinator `collectAll` that operates on programs
+   * Implement the following combinator `collectAll` that transforms a list of
+   * console programs into a console program that returns a list of collected 
+   * results of the individual programs.
    */
   def collectAll[A](programs: List[Console[A]]): Console[List[A]] =
     ???
 
   /**
-   * implement the `foreach` function that compute a result for each iteration
+   * Implement the `foreach` function, which iterates over the values in a list,
+   * passing every value to a body, which effectfully computes a `B`, and 
+   * collecting all such `B` values in a list.
    */
   def foreach[A, B](values: List[A])(body: A => Console[B]): Console[List[B]] =
     ???
 
   /**
    * Using `Console.writeLine` and `Console.readLine`, map the following
-   * list of strings into a list of programs, each of which writes a
-   * question and reads an answer.
+   * list of strings into a list of programs, each of which prints out its 
+   * question and reads the answer.
    */
   val questions =
     List(
@@ -126,12 +130,13 @@ object effects {
    * Now using only `questions` and `foreach`, write a program that is
    * equivalent to `answers2`.
    */
-  val answers3: Console[List[String]] = foreach(???) { question =>
-    ???
-  }
+  val answers3: Console[List[String]] = 
+    foreach(questions) { question =>
+      ???
+    }
 
   /**
-   * Implement the methods of Thunk
+   * Implement the missing methods of Thunk.
    */
   class Thunk[A](val unsafeRun: () => A) {
     def map[B](ab: A => B): Thunk[B]             = ???
