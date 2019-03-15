@@ -1,4 +1,4 @@
-//val ZIOVersion = "1.0-RC1"
+val ZIOVersion = "1.0-RC1"
 
 lazy val root = project
   .in(file("."))
@@ -23,7 +23,7 @@ addCommandAlias("check", "all scalafmtSbtCheck scalafmtCheck test:scalafmtCheck"
 
 libraryDependencies ++= Seq(
   // Scalaz-zio
-//  "org.scalaz" %% "scalaz-zio"        % ZIOVersion,
+  "org.scalaz" %% "scalaz-zio"        % ZIOVersion,
 //  "org.scalaz" %% "scalaz-zio-future" % ZIOVersion,
   // URL parsing
   "io.lemonlabs" %% "scala-uri" % "1.4.1",

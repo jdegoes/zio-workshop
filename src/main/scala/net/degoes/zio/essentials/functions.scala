@@ -16,27 +16,37 @@ object functions {
   /**
    * Partial => Total
    */
+  //EXERCISE 1
   def parseInt1(s: String): Int   = s.toInt
   def parseInt2( /* ??? */ ): ??? = ???
 
+  //EXERCISE 2
   def divide1(a: Int, b: Int): Int = a / b
   def divide2( /* ??? */ ): ???    = ???
 
+  //EXERCISE 3
   def head1[A](l: Seq[A]): A     = l.head
   def head2[A]( /* ??? */ ): ??? = ???
 
+  //EXERCISE 4
   def secondChar1(str: String): Char = str.charAt(2)
   def secondChar2( /* ??? */ ): Char = ???
+
+  //EXERCISE 5
+  def abs(n: Int): Int = if (n < 0) throw new Exception(s"$n should be positive") else n
 
   /**
    * Non-deterministic => Deterministic
    */
+  //EXERCISE 1
   def increment1: Int              = scala.util.Random.nextInt(0) + 1
   def increment2( /* ??? */ ): ??? = ???
 
+  //EXERCISE 2
   def nextDay1: LocalDate        = LocalDate.now.plusDays(1)
   def nextDay2( /* ??? */ ): ??? = ???
 
+  //EXERCISE 3
   case object IncorrectAge extends Exception
   def computeAge1(year: Int): Int = {
     val age = LocalDate.now.getYear - year
@@ -48,12 +58,14 @@ object functions {
   /**
    * Side effects => Free of side effects
    */
+  //EXERCISE 1
   def get1(a: Int): Int = {
-    println(s"the given of a is: $a")
+    println(s"the value is: $a")
     a
   }
   def get2( /* ??? */ ): ??? = ???
 
+  //EXERCISE 2
   def sumN1(n: Int): Int = {
     var result = 0
     (1 to n).foreach(i => result = result + i)
@@ -61,27 +73,28 @@ object functions {
   }
   def sumN2( /* ??? */ ): ??? = ???
 
+  //EXERCISE 3
   def updateArray1[A](arr: Array[A], i: Int, f: A => A): Unit =
     arr.update(i, f(arr(i)))
   def updateArray2[A]( /* ??? */ ): ??? = ???
 
-  trait CreditCard
-  trait PaymentProcessor {
-    def charge(cc: CreditCard, price: Double): Unit
+  //EXERCISE 4
+  trait Account
+  trait Processor {
+    def charge(account: Account, amount: Double): Unit
   }
-  case class Coffee(sugar: Int) {
-    val price = 2.5
+  case class Coffee() {
+    val price = 3.14
   }
+  def buyCoffee1(processor: Processor, account: Account): Coffee = {
+    val coffee = Coffee()
+    processor.charge(account, coffee.price)
+    coffee
+  }
+  final case class Charge(account: Account, amount: Double)
+  def buyCoffee2(account: Account): ??? = ???
 
-  def buyCoffee1(withSugar: Option[Int], p: PaymentProcessor, cc: CreditCard): Coffee = {
-    val cup =
-      withSugar.fold(Coffee(0))(n => Coffee(n))
-    p.charge(cc, cup.price)
-    cup
-  }
-  final case class Charge(cc: CreditCard, price: Double)
-  def buyCoffee2( /*???*/ ): ??? = ???
-
+  //EXERCISE 5
   trait Draw {
     def goLeft(): Unit
     def goRight(): Unit

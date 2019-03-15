@@ -11,7 +11,6 @@ object effects {
    * returning a value.
    */
   sealed trait Console[A] { self =>
-    import Console._
 
     /**
      * Implement `flatMap` for every type of `Console[A]` to turn it into a
