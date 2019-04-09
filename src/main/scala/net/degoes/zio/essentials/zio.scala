@@ -15,9 +15,9 @@ import scala.io.Source
  * `ZIO[R, E, A]` is an immutable data structure that models an effectful
  * program.
  *
- *  - The program requires an environment `R`
- *  - The program may fail with an error `E`
- *  - The program may succeed with a value `A`
+ *  - The effect requires an environment `R`
+ *  - The effect may fail with an error `E`
+ *  - The effect may succeed with a value `A`
  *
  * Mental model: effectful version of: R => Either[E, A]
  */
@@ -175,10 +175,10 @@ object zio_composition {
     ???
 
   /**
-   * Using `flatMap` and `map` compute the sum of the values of `a` and `b`.
+   * Using `flatMap` and `map` compute the sum of the values of `aEffect` and `bEffect`.
    */
-  val a: UIO[Int]   = IO.succeed(14)
-  val b: UIO[Int]   = IO.succeed(16)
+  val aEffect: UIO[Int]   = IO.succeed(14)
+  val bEffect: UIO[Int]   = IO.succeed(16)
   val sum: UIO[Int] = ???
 
   /**
@@ -311,8 +311,7 @@ object zio_composition {
         println("You guessed wrong! The number was " + number)
     }
   }
-  lazy val playGame2: Task[Unit] =
-    ???
+  lazy val playGame2: Task[Unit] = ???
 }
 
 object zio_failure {
@@ -353,7 +352,7 @@ object zio_failure {
   /**
    * Recover from a division by zero error by using `fold`
    */
-  val recovered1: UIO[Option[Int]] = divide1(100, 0) ?
+  val recovered1: UIO[Option[Int]] = divide1(100, 0) ? 
 
   /**
    * Using `foldM`, Print out either an error message or the division.
@@ -498,8 +497,7 @@ object zio_effects {
       ),
     e1 => println(s"${e1.toString}")
   )
-  val equivalentReadChunk: IO[Throwable, Unit] =
-    ???
+  val equivalentReadChunk: IO[Throwable, Unit] = ???
 
   /**
    * Using `ZIO.effectAsyncMaybe` wrap the following Java callback API into an `IO`
@@ -609,6 +607,9 @@ object zio_interop extends DefaultRuntime {
   lazy val future2        = Future.successful("Hello World")
   val task2: Task[String] = ???
 
+  // ZIO.fromFuture(implicit ec => .............) : Task[A]
+  // ZIO#toFuture : UIO[Future[A]]
+
 }
 
 trait Logger {
@@ -668,7 +669,8 @@ object zio_resources {
       throw new Exception("Boom!")
     } finally i -= 1
 
-  def increment2(): Task[Unit] = ???
+  def increment2(): Task[Unit] = 
+    ???
 
   /**
    * Rewrite the following procedural program to ZIO, using `IO.fail` and the
@@ -723,7 +725,7 @@ object zio_resources {
   def readFileTCF2(file: File): Task[List[Byte]] = ???
 
   /**
-   *`Managed[R, E, A]` is a managed resource of type `A`, which may be used by
+   *`Managed[E, A]` is a managed resource of type `A`, which may be used by
    * invoking the `use` method of the resource. The resource will be automatically
    * acquired before the resource is used, and automatically released after the
    * resource is used.
@@ -772,15 +774,13 @@ object zio_resources {
   def acquire(a: Int, b: Int): Task[Int] = (a / b) ?
   val managed: Managed[Throwable, Int]   = ???
   val check: Task[Int]                   = ???
-
 }
 
 object zio_environment {
-
   /**
    * The Default Modules in ZIO:
    *
-   * Console   (putStr, getStr)
+   * Console   (putStrLn, getStrLn)
    * Clock     (currentTime, sleep, nanoTime)
    * Random    (nextInt, nextBoolean, ...)
    * System    (env)
@@ -809,11 +809,11 @@ object zio_environment {
 
   // Write the type of a program that requires `Console` and `System` and
   // which could fail with `E` or succeed with `A`:
-  type ConsoleWithSystemIO = ???
+  type ConsoleWithSystemIO[E, A] = ???
 
   // Write the type of a program that requires `Clock`, `System` and `Random`
   // and which could fail with `E` or succeed with `A`:
-  type ClockWithSystemWithRandom = ???
+  type ClockWithSystemWithRandom[E, A] = ???
 
   // Write the type of a program that requires `Clock`, `Console`, `System` and
   // `Random` and which could fail with `E` or succeed with `A`:
@@ -929,32 +929,36 @@ object zio_dependency_management {
    */
   //Module
   trait FileSystem {
-    val filesystem: ???
+    val filesystem: FileSystem.Service[Any]
   }
 
   object FileSystem {
     // Service: definition of the methods of the module:
-    trait Service[R] {}
+    trait Service[R] {
+    }
 
     // Production implementation of the module:
-    trait Live extends FileSystem {
+    trait Live extends FileSystem with Console {
       val filesystem: ??? = ???
     }
-    object Live extends Live
+    object Live extends Live with Console.Live
   }
-  //Helpers
-  object filesystem_ extends FileSystem.Service[FileSystem] {}
+
+  // Helpers
+  object fs extends FileSystem.Service[FileSystem] { }
 
   /**
    * Write an effect that uses `FileSystem with Console`.
    */
-  val fileProgram: ZIO[FileSystem with Console, ???, ???] = ???
+  val fileProgram: ZIO[FileSystem with Console, ???, ???] = 
+    ???
 
   /**
    * Create a `Runtime` that can execute effects that require
    * `FileSystem with Console`.
    */
-  val FSRuntime: Runtime[FileSystem with Console] = ???
+  val FSRuntime: Runtime[FileSystem with Console] = 
+    ???
 
   /**
    * Execute `fileProgram` using `FSRuntime`.
