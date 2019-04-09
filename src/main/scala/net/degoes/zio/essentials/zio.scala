@@ -12,11 +12,14 @@ import scalaz.zio.internal.{ Platform, PlatformLive }
 import scala.io.Source
 
 /**
- * `ZIO[R, E, A]` is an immutable data structure that models an effectful program.
+ * `ZIO[R, E, A]` is an immutable data structure that models an effectful 
+ * program.
  *
  *  - The program requires an environment `R`
  *  - The program may fail with an error `E`
  *  - The program may succeed with a value `A`
+ * 
+ * Mental model: effectful version of: R => Either[E, A]
  */
 object zio_types {
 
@@ -49,18 +52,19 @@ object zio_types {
    */
   /**
    * An effect that may fail with a value of type `E` or succeed with a value
-   * of type `A`.
+   * of type `A`, and doesn't require any specific environment.
    */
   type IO[E, A] = ???
 
   /**
    * An effect that may fail with `Throwable` or succeed with a value of
-   * type `A`.
+   * type `A`, and doesn't require any specific environment.
    */
   type Task[A] = ???
 
   /**
-   * An effect that cannot fail but may succeed with a value of type `A`.
+   * An effect that cannot fail but may succeed with a value of type `A`,
+   * and doesn't require any specific environment.
    */
   type UIO[A] = ???
 
@@ -146,37 +150,37 @@ object zio_composition {
 
   /**
    * Map a ZIO value that produces an Int 42 into ZIO value that produces a String "42"
-   * by converting the integer into its string
-   * and define the return ZIO type
+   * by converting the integer into its string.
    */
-  val toStr: ??? = IO.succeed(42) ?
+  val toStr: UIO[String] = IO.succeed(42) ?
 
   /**
    * Add one to the value of the computation, and define the return ZIO type
    */
-  def addOne(i: Int): ??? = IO.succeed(i) ?
+  def addOne(i: Int): UIO[Int] = IO.succeed(i) ?
 
   /**
-   * Map a ZIO value that fails with an Int 42 into ZIO value that fails with a String "42"
-   * by converting the integer into its string
-   * and define the return ZIO type
+   * Using the `mapError` method, map a ZIO value that fails with an Int 42 
+   * into ZIO value that fails with a String "42" by converting the integer 
+   * into its string.
    */
-  val toFailedStr: ??? = IO.fail(42) ?
+  val toFailedStr: IO[String, Nothing] = 
+    IO.fail(42) ?
 
   /**
-   * Using `flatMap` check the precondition `p` in the result of the computation of `io`
-   * and improve the ZIO types in the following input parameters
+   * Using `flatMap` check the precondition `p` in the result of the 
+   * computation of `io`, returning a `String` failure if the precondition
+   * is not satisfied.
    */
-  def verify(io: IO[Nothing, Int])(p: Int => Boolean): ??? =
+  def verify(effect: UIO[Int])(p: Int => Boolean): IO[String, Int] =
     ???
 
   /**
-   * Using `flatMap` and `map` compute the sum of the values of `a` and `b`
-   * and improve the ZIO types
+   * Using `flatMap` and `map` compute the sum of the values of `a` and `b`.
    */
-  val a: IO[Nothing, Int]   = IO.succeed(14)
-  val b: IO[Nothing, Int]   = IO.succeed(16)
-  val sum: IO[Nothing, Int] = ???
+  val a: UIO[Int]   = IO.succeed(14)
+  val b: UIO[Int]   = IO.succeed(16)
+  val sum: UIO[Int] = ???
 
   /**
    * Using `flatMap`, implement `ifThenElse`, which checks the ZIO condition and
@@ -293,16 +297,6 @@ object zio_composition {
   def collect(effects: List[UIO[Int]]): UIO[List[Int]] = effects ?
 
   /**
-   * rewrite this procedural program into a ZIO equivalent and improve the ZIO input/output types
-   */
-  def analyzeName1(first: String, last: String): String =
-    if ((first + " " + last).length > 20) "Your full name is really long"
-    else if ((first + last).contains(" ")) "Your name is really weird"
-    else "Your name is pretty normal"
-
-  def analyzeName2(first: UIO[String], last: UIO[String]): UIO[String] = ???
-
-  /**
    * Translate the following procedural program into ZIO.
    */
   def playGame1(): Unit = {
@@ -318,7 +312,8 @@ object zio_composition {
         println("You guessed wrong! The number was " + number)
     }
   }
-  val playGame2: Task[Unit] = ???
+  lazy val playGame2: Task[Unit] =
+    ???
 }
 
 object zio_failure {
@@ -476,11 +471,11 @@ object zio_effects {
   def first(as: List[Int]): Task[Int] = as.head ?
 
   /**
-   * Use `ZIO.effectAsync` method to implement the following `sleep`method
-   * and choose the correct error type
+   * Use `ZIO.effectAsync` method to implement the following `sleep` 
+   * method.
    */
   val scheduledExecutor = Executors.newScheduledThreadPool(1)
-  def sleep(l: Long, u: TimeUnit): IO[Nothing, Unit] =
+  def sleep(l: Long, u: TimeUnit): UIO[Unit] =
     scheduledExecutor
       .schedule(new Runnable {
         def run(): Unit = ???
@@ -504,6 +499,8 @@ object zio_effects {
       ),
     e1 => println(s"${e1.toString}")
   )
+  val equivalentReadChunk: IO[Throwable, Unit] = 
+    ???
 
   /**
    * Using `ZIO.effectAsyncMaybe` wrap the following Java callback API into an `IO`
@@ -583,35 +580,40 @@ object impure_to_pure {
   def replaceV2(as: List[UIO[Int]], value: UIO[Int], newValue: UIO[Int]): UIO[List[Int]] = ???
 }
 
-object zio_interop {
+object zio_interop extends DefaultRuntime {
 
   import scala.concurrent.Future
   import scala.concurrent.ExecutionContext.global
 
   /**
-   * Using `Fiber#toFuture`. Convert the following `Fiber` into a `Future`
+   * Using `Fiber#toFuture`, convert the following `Fiber` into a `Future`.
    */
   val fiber: Fiber[Throwable, Int] = Fiber.succeed(1)
-  val fToFuture: Future[Int]       = ???
+  val fToFuture: UIO[Future[Int]]  = ???
 
   /**
-   * Using `Fiber.fromFruture`. Wrap the following Future in a `Fiber`
+   * Using `Fiber.fromFuture`, convert the following `Future` into a `Fiber`.
    */
-  val future1                          = () => Future(Thread.sleep(1000))(global)
+  lazy val future1                     = Future(Thread.sleep(1000))(global)
   val fToFiber: Fiber[Throwable, Unit] = ???
 
   /**
-   * Using `Task#toFuture`. Convert unsafely the following ZIO Task into `Future`.
+   * Using `Task#toFuture`, unsafely convert the following `Task` into `Future`.
    */
   val task1: Task[Int]       = IO.effect("wrong".toInt)
   val tToFuture: Future[Int] = ???
 
   /**
-   * Use `Task.fromFuture` to convert the following Scala `Future` into ZIO Task
+   * Use `Task.fromFuture` to convert the following Scala `Future` into a 
+   * ZIO `Task`.
    */
-  val future2             = () => Future.successful("Hello World")
+  lazy val future2        = Future.successful("Hello World")
   val task2: Task[String] = ???
 
+}
+
+trait Logger {
+  def log(line: String): Unit 
 }
 
 object zio_resources {
@@ -676,14 +678,15 @@ object zio_resources {
   def tryCatch1(): Unit =
     try throw new Exception("Uh oh")
     finally println("On the way out...")
-  val tryCatch2: Task[Unit] = ???
+  val tryCatch2: Task[Unit] = 
+    ???
 
   /**
    * Rewrite the `readFile1` function to use `bracket` so resources can be
    * safely cleaned up in the event of errors, defects, or interruption.
    */
-  def readFile1(file: File): Task[List[Byte]] = {
-    def readAll(is: InputStream, acc: List[Byte]): Task[List[Byte]] =
+  def readFile1(file: File): IO[Exception, List[Byte]] = {
+    def readAll(is: InputStream, acc: List[Byte]): IO[Exception, List[Byte]] =
       is.read.flatMap {
         case None       => IO.succeed(acc.reverse)
         case Some(byte) => readAll(is, byte :: acc)
@@ -696,7 +699,7 @@ object zio_resources {
     } yield bytes
   }
 
-  def readFile2(file: File): Task[List[Byte]] = ???
+  def readFile2(file: File): IO[Exception, List[Byte]] = ???
 
   /**
    * Implement the `tryCatchFinally` method using `bracket` or `ensuring`.
@@ -776,34 +779,45 @@ object zio_resources {
 object zio_environment {
 
   /**
-   * The Environments in ZIO
-   * console (putStr, getStr)
-   * clock (currentTime, sleep, nanoTime)
-   * random (nextInt, nextBoolean, ...)
-   * system (env)
+   * The Default Modules in ZIO:
+   * 
+   * Console   (putStr, getStr)
+   * Clock     (currentTime, sleep, nanoTime)
+   * Random    (nextInt, nextBoolean, ...)
+   * System    (env)
+   * Blocking  (blocking, interruptible) 
+   * Scheduler (scheduledExecutor)
    */
-  //write the type of a program that requires scalaz.zio.clock.Clock and which could fail with E or succeed with A
-  type ClockIO = ???
+  // Write the type of a program that requires `scalaz.zio.clock.Clock` and which
+  // could fail with `E` or succeed with `A`:
+  type ClockIO[E, A] = ???
 
-  //write the type of a program that requires scalaz.zio.console.Console and which could fail with E or succeed with A
-  type ConsoleIO = ???
+  // Write the type of a program that requires `scalaz.zio.console.Console` and
+  // which could fail with `E` or succeed with A`:
+  type ConsoleIO[E, A] = ???
 
-  //write the type of a program that requires scalaz.zio.system.System and which could fail with E or succeed with A
-  type SystemIO = ???
+  // Write the type of a program that requires `scalaz.zio.system.System` and 
+  // which could fail with E or succeed with A:
+  type SystemIO[E, A] = ???
 
-  //write the type of a program that requires scalaz.zio.random.Random and which could fail with E or succeed with A
-  type RandomIO = ???
+  // Write the type of a program that requires `scalaz.zio.random.Random` and 
+  // which could fail with `E` or succeed with `A`:
+  type RandomIO[E, A] = ???
 
-  //write the type of a program that requires Clock and System and which could fail with E or succeed with A
-  type ClockWithSystemIO = ???
+  // Write the type of a program that requires Clock and System and which 
+  // could fail with `E` or succeed with `A`:
+  type ClockWithSystemIO[E, A] = ???
 
-  //write the type of a program that requires Console and System and which could fail with E or succeed with A
+  // Write the type of a program that requires `Console` and `System` and 
+  // which could fail with `E` or succeed with `A`:
   type ConsoleWithSystemIO = ???
 
-  //write the type of a program that requires Clock, System and Random and which could fail with E or succeed with A
+  // Write the type of a program that requires `Clock`, `System` and `Random` 
+  // and which could fail with `E` or succeed with `A`:
   type ClockWithSystemWithRandom = ???
 
-  //write the type of a program that requires Clock, Console, System and Random and which could fail with E or succeed with A
+  // Write the type of a program that requires `Clock`, `Console`, `System` and 
+  // `Random` and which could fail with `E` or succeed with `A`:
   type ClockWithConsoleWithSystemWithRandom = ???
 }
 
