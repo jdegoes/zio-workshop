@@ -7,7 +7,7 @@ import java.io.File
 import java.util.concurrent.{ Executors, TimeUnit }
 
 import scalaz.zio._
-import scalaz.zio.internal.{ Platform, PlatformLive }
+import scalaz.zio.internal.PlatformLive
 
 import scala.io.Source
 
@@ -106,7 +106,6 @@ object zio_values {
    * Note: You will have to use the `.refineOrDie` method to refine the
    * `Throwable` type into something more specific.
    */
-  import java.io.IOException
   val getStrLn: ??? = ???
 
   /**
@@ -582,8 +581,8 @@ object impure_to_pure {
 
 object zio_interop extends DefaultRuntime {
 
-  import scala.concurrent.Future
   import scala.concurrent.ExecutionContext.global
+  import scala.concurrent.Future
 
   /**
    * Using `Fiber#toFuture`, convert the following `Fiber` into a `Future`.
@@ -822,13 +821,7 @@ object zio_environment {
 }
 
 object zio_dependency_management {
-  import scalaz.zio.console
   import scalaz.zio.console.Console
-  import scalaz.zio.clock
-  import scalaz.zio.clock.Clock
-  import scalaz.zio.system
-  import scalaz.zio.system.System
-  import java.io.IOException
 
   /**
    * Using `zio.console.getStrLn`, implement `getStrLn` and identify the
@@ -870,7 +863,6 @@ object zio_dependency_management {
    * - implement all helper functions.
    */
   //Module
-  import system.System
 
   trait Config {
     val config: ???
@@ -898,7 +890,6 @@ object zio_dependency_management {
     override val port = ???
     override val host = ???
   }
-  import config_._
 
   /**
    * Write a program that depends on `Config` and `Console` and use the Scala
