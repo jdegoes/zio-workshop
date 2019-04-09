@@ -12,13 +12,13 @@ import scalaz.zio.internal.PlatformLive
 import scala.io.Source
 
 /**
- * `ZIO[R, E, A]` is an immutable data structure that models an effectful 
+ * `ZIO[R, E, A]` is an immutable data structure that models an effectful
  * program.
  *
  *  - The program requires an environment `R`
  *  - The program may fail with an error `E`
  *  - The program may succeed with a value `A`
- * 
+ *
  * Mental model: effectful version of: R => Either[E, A]
  */
 object zio_types {
@@ -159,15 +159,15 @@ object zio_composition {
   def addOne(i: Int): UIO[Int] = IO.succeed(i) ?
 
   /**
-   * Using the `mapError` method, map a ZIO value that fails with an Int 42 
-   * into ZIO value that fails with a String "42" by converting the integer 
+   * Using the `mapError` method, map a ZIO value that fails with an Int 42
+   * into ZIO value that fails with a String "42" by converting the integer
    * into its string.
    */
-  val toFailedStr: IO[String, Nothing] = 
+  val toFailedStr: IO[String, Nothing] =
     IO.fail(42) ?
 
   /**
-   * Using `flatMap` check the precondition `p` in the result of the 
+   * Using `flatMap` check the precondition `p` in the result of the
    * computation of `io`, returning a `String` failure if the precondition
    * is not satisfied.
    */
@@ -470,7 +470,7 @@ object zio_effects {
   def first(as: List[Int]): Task[Int] = as.head ?
 
   /**
-   * Use `ZIO.effectAsync` method to implement the following `sleep` 
+   * Use `ZIO.effectAsync` method to implement the following `sleep`
    * method.
    */
   val scheduledExecutor = Executors.newScheduledThreadPool(1)
@@ -498,7 +498,7 @@ object zio_effects {
       ),
     e1 => println(s"${e1.toString}")
   )
-  val equivalentReadChunk: IO[Throwable, Unit] = 
+  val equivalentReadChunk: IO[Throwable, Unit] =
     ???
 
   /**
@@ -603,7 +603,7 @@ object zio_interop extends DefaultRuntime {
   val tToFuture: Future[Int] = ???
 
   /**
-   * Use `Task.fromFuture` to convert the following Scala `Future` into a 
+   * Use `Task.fromFuture` to convert the following Scala `Future` into a
    * ZIO `Task`.
    */
   lazy val future2        = Future.successful("Hello World")
@@ -612,7 +612,7 @@ object zio_interop extends DefaultRuntime {
 }
 
 trait Logger {
-  def log(line: String): Unit 
+  def log(line: String): Unit
 }
 
 object zio_resources {
@@ -677,7 +677,7 @@ object zio_resources {
   def tryCatch1(): Unit =
     try throw new Exception("Uh oh")
     finally println("On the way out...")
-  val tryCatch2: Task[Unit] = 
+  val tryCatch2: Task[Unit] =
     ???
 
   /**
@@ -753,7 +753,7 @@ object zio_resources {
    * Define a value of type `Managed` for the acquire and release actions
    * and identify the correct types
    */
-  val managed1: Managed[???, ???, ???] = ???
+  val managed1: Managed[???, ???] = ???
 
   /**
    * implement the computation of `use` for this Managed
@@ -769,9 +769,9 @@ object zio_resources {
    * using the data structure `Managed` implement a program that divide a/b then check if it is odd,
    * and finally print out the result on the console
    */
-  def acquire(a: Int, b: Int): Task[Int]    = (a / b) ?
-  val managed: Managed[Any, Throwable, Int] = ???
-  val check: Task[Int]                      = ???
+  def acquire(a: Int, b: Int): Task[Int] = (a / b) ?
+  val managed: Managed[Throwable, Int]   = ???
+  val check: Task[Int]                   = ???
 
 }
 
@@ -779,12 +779,12 @@ object zio_environment {
 
   /**
    * The Default Modules in ZIO:
-   * 
+   *
    * Console   (putStr, getStr)
    * Clock     (currentTime, sleep, nanoTime)
    * Random    (nextInt, nextBoolean, ...)
    * System    (env)
-   * Blocking  (blocking, interruptible) 
+   * Blocking  (blocking, interruptible)
    * Scheduler (scheduledExecutor)
    */
   // Write the type of a program that requires `scalaz.zio.clock.Clock` and which
@@ -795,27 +795,27 @@ object zio_environment {
   // which could fail with `E` or succeed with A`:
   type ConsoleIO[E, A] = ???
 
-  // Write the type of a program that requires `scalaz.zio.system.System` and 
+  // Write the type of a program that requires `scalaz.zio.system.System` and
   // which could fail with E or succeed with A:
   type SystemIO[E, A] = ???
 
-  // Write the type of a program that requires `scalaz.zio.random.Random` and 
+  // Write the type of a program that requires `scalaz.zio.random.Random` and
   // which could fail with `E` or succeed with `A`:
   type RandomIO[E, A] = ???
 
-  // Write the type of a program that requires Clock and System and which 
+  // Write the type of a program that requires Clock and System and which
   // could fail with `E` or succeed with `A`:
   type ClockWithSystemIO[E, A] = ???
 
-  // Write the type of a program that requires `Console` and `System` and 
+  // Write the type of a program that requires `Console` and `System` and
   // which could fail with `E` or succeed with `A`:
   type ConsoleWithSystemIO = ???
 
-  // Write the type of a program that requires `Clock`, `System` and `Random` 
+  // Write the type of a program that requires `Clock`, `System` and `Random`
   // and which could fail with `E` or succeed with `A`:
   type ClockWithSystemWithRandom = ???
 
-  // Write the type of a program that requires `Clock`, `Console`, `System` and 
+  // Write the type of a program that requires `Clock`, `Console`, `System` and
   // `Random` and which could fail with `E` or succeed with `A`:
   type ClockWithConsoleWithSystemWithRandom = ???
 }

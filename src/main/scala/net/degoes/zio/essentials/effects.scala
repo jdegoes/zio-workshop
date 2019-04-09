@@ -90,7 +90,7 @@ object effects {
 
   /**
    * Implement the following combinator `collectAll` that transforms a list of
-   * console programs into a console program that returns a list of collected 
+   * console programs into a console program that returns a list of collected
    * results of the individual programs.
    */
   def collectAll[A](programs: List[Console[A]]): Console[List[A]] =
@@ -98,7 +98,7 @@ object effects {
 
   /**
    * Implement the `foreach` function, which iterates over the values in a list,
-   * passing every value to a body, which effectfully computes a `B`, and 
+   * passing every value to a body, which effectfully computes a `B`, and
    * collecting all such `B` values in a list.
    */
   def foreach[A, B](values: List[A])(body: A => Console[B]): Console[List[B]] =
@@ -106,7 +106,7 @@ object effects {
 
   /**
    * Using `Console.writeLine` and `Console.readLine`, map the following
-   * list of strings into a list of programs, each of which prints out its 
+   * list of strings into a list of programs, each of which prints out its
    * question and reads the answer.
    */
   val questions =
@@ -129,7 +129,7 @@ object effects {
    * Now using only `questions` and `foreach`, write a program that is
    * equivalent to `answers2`.
    */
-  val answers3: Console[List[String]] = 
+  val answers3: Console[List[String]] =
     foreach(questions) { question =>
       ???
     }
