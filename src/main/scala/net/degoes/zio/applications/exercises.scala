@@ -32,7 +32,7 @@ object hangman extends App {
   /**
    * Create a hangman game that requires the capability to perform `Console` and `Random` effects.
    */
-  def myGame: ZIO[Console with Random, Nothing, Unit] = ???
+  lazy val myGame: ZIO[Console with Random, Nothing, Unit] = ???
 
   case class State(name: String, guesses: Set[Char], word: String) {
     def failures: Int = (guesses -- word.toSet).size
@@ -66,11 +66,11 @@ object hangman extends App {
     putStrLn(text)
   }
 
-  def getChoice: ZIO[Console, Nothing, Char] = ???
+  lazy val getChoice: ZIO[Console, Nothing, Char] = ???
 
-  def getName: ZIO[Console, Nothing, String] = ???
+  lazy val getName: ZIO[Console, Nothing, String] = ???
 
-  def chooseWord: ZIO[Random, Nothing, String] = ???
+  lazy val chooseWord: ZIO[Random, Nothing, String] = ???
 
   val Dictionary = List(
     "aaron",

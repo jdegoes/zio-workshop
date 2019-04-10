@@ -201,7 +201,8 @@ object zio_parallelism {
     case object Secondary extends Database
   }
   def getUserById(userId: Int, db: Database): Task[User] = ???
-  def getUserById(userId: Int): Task[User]               = ???
+  def getUserById(userId: Int): Task[User]               = 
+    ???
 
   /**
    * Using `raceAttempt` Race `leftContestent1` and `rightContestent1` to see
@@ -402,7 +403,7 @@ object zio_queue {
   /**
    * Using `Queue.bounded`, create a queue for `Int` values with a capacity of 10
    */
-  val makeQueue: UIO[Queue[Int]] = Queue.bounded[Int](10)
+  val makeQueue: UIO[Queue[Int]] = ???
 
   /**
    * Place `42` into the queue using `Queue#offer`.
@@ -410,7 +411,7 @@ object zio_queue {
   val offered1: UIO[Unit] =
     for {
       queue <- makeQueue
-      _     <- (queue ? : UIO[Unit])
+      _     <- (queue ? : UIO[Boolean])
     } yield ()
 
   /**
@@ -601,7 +602,7 @@ object zio_stream {
 
   /**
    * Create a stream from an effect producing a String
-   * using `Stream.lift`
+   * using `Stream.fromEffect`
    */
   val stream4: Stream[Nothing, String] = ???
 
@@ -685,7 +686,7 @@ object zio_schedule {
    * and the `everySecond` schedule, create a schedule that repeats fives times,
    * evey second.
    */
-  val fiveTimesEverySecond = ???
+  val fiveTimesEverySecond =  ???
 
   /**
    *  Using the `ZIO#repeat`, repeat the action
@@ -760,4 +761,9 @@ object zio_schedule {
   import scalaz.zio.random.Random
   def mySchedule[A]: ZSchedule[Clock with Random, A, List[A]] =
     ???
+}
+
+object zio_stm {
+  // TRef[A]
+  // STM[E, A]    
 }
