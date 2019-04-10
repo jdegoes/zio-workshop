@@ -42,7 +42,7 @@ object hangman extends App {
     def playerWon: Boolean = (word.toSet -- guesses).isEmpty
   }
 
-  def gameLoop(state: State): ZIO[Console, Nothing, State] = ???
+  def gameLoop(state: State): ZIO[Console, Nothing, Unit] = ???
 
   def renderState(state: State): ZIO[Console, Nothing, Unit] = {
 
