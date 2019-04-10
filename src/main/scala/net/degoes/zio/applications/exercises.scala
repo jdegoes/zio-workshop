@@ -5,9 +5,11 @@ package applications
 
 import scalaz.zio._
 import scalaz.zio.blocking.Blocking
-import scalaz.zio.console.{ putStrLn, Console }
+import scalaz.zio.console._
 import scalaz.zio.duration.Duration
 import scalaz.zio.random.Random
+
+import java.io.IOException
 
 object circuit_breaker extends App {
 
@@ -30,9 +32,10 @@ object circuit_breaker extends App {
 object hangman extends App {
 
   /**
-   * Create a hangman game that requires the capability to perform `Console` and `Random` effects.
+   * Create a hangman game that requires the capability to perform `Console` and 
+   * `Random` effects.
    */
-  lazy val myGame: ZIO[Console with Random, Nothing, Unit] = ???
+  lazy val myGame: ZIO[Console with Random, IOException, Unit] = ???
 
   case class State(name: String, guesses: Set[Char], word: String) {
     def failures: Int = (guesses -- word.toSet).size
@@ -42,7 +45,11 @@ object hangman extends App {
     def playerWon: Boolean = (word.toSet -- guesses).isEmpty
   }
 
-  def gameLoop(state: State): ZIO[Console, Nothing, Unit] = ???
+  /**
+   * Implement the main game loop, which gets choices from the user until
+   * the game is won or lost.
+   */
+  def gameLoop(state0: State): ZIO[Console, IOException, Unit] = ???
 
   def renderState(state: State): ZIO[Console, Nothing, Unit] = {
 
@@ -66,10 +73,21 @@ object hangman extends App {
     putStrLn(text)
   }
 
-  lazy val getChoice: ZIO[Console, Nothing, Char] = ???
+  /**
+   * Implement an effect that gets a single, lower-case character from 
+   * the user.
+   */
+  lazy val getChoice: ZIO[Console, IOException, Char] = ???
 
-  lazy val getName: ZIO[Console, Nothing, String] = ???
+  /**
+   * Implement an effect that prompts the user for their name, and 
+   * returns it.
+   */
+  lazy val getName: ZIO[Console, IOException, String] = ???
 
+  /**
+   * Implement an effect that chooses a random word from the dictionary.
+   */
   lazy val chooseWord: ZIO[Random, Nothing, String] = ???
 
   val Dictionary = List(
@@ -952,17 +970,64 @@ object hangman extends App {
    *  Instantiate the polymorphic game to the `IO[Nothing, ?]` type.
    *  by providing `Console`and `Random`
    */
-  val myGameIO: UIO[Unit] = myGame ?
+  lazy val myGameIO: UIO[Unit] = myGame ?
 
   /**
-   * Create a test data structure that can contain a buffer of lines (to be
-   * read from the console), a log of output (that has been written to the
-   * console), and a list of "random" numbers.
+   * Implement the `runScenario` method according to its type. Hint: You 
+   * will have to use `provide` on `TestModule`.
    */
-  override def run(args: List[String]): ZIO[Environment, Nothing, Int] = ???
+  def runScenario(testData: TestData): IO[IOException, TestData] = ???
+
+  case class TestData(
+    output   : List[String],
+    input    : List[String],
+    integers : List[Int]
+  ) {
+    def render: String = 
+      output.reverse.mkString("\n")
+  }
+  case class TestModule(ref: Ref[TestData]) extends Random with Console {
+    val console = new Console.Service[Any] {
+      val getStrLn: IO[IOException, String] = 
+        ref.modify(data => (data.input.head, data.copy(input = data.input.tail)))
+      def putStr(line: String): UIO[Unit] = 
+        ref.update(data => data.copy(output = line :: data.output)).void
+      def putStrLn(line: String): UIO[Unit] = putStr(line + "\n")
+    }
+
+    val random = new Random.Service[Any] {
+      val nextBoolean: UIO[Boolean] = UIO(false)
+      def nextBytes(length: Int): UIO[scalaz.zio.Chunk[Byte]] = UIO(Chunk.empty)
+      val nextDouble: UIO[Double] = UIO(0.0)
+      val nextFloat: UIO[Float] = UIO(0.0F)
+      val nextGaussian: UIO[Double] = UIO(0.0)
+      val nextInt: UIO[Int] = ref.modify(data => (data.integers.head, data.copy(integers = data.integers.tail)))
+      def nextInt(n: Int): UIO[Int] = ref.modify(data => (data.integers.head, data.copy(integers = data.integers.tail)))
+      val nextLong: UIO[Long] = UIO(0L)
+      val nextPrintableChar: UIO[Char] = UIO('A')
+      def nextString(length: Int): UIO[String] = UIO("foo")
+    }
+  }
+
+  override def run(args: List[String]): ZIO[Environment, Nothing, Int] = 
+    myGame.fold(_ => 1, _ => 0)
 }
 
 object parallel_web_crawler {
+  case class CrawlState[E](visited: Set[URL], errors: List[E]) {
+    def visitAll(urls: Set[URL]): CrawlState[E] = copy(visited = visited ++ urls)
+
+    def log(e: E): CrawlState[E] = copy(errors = e :: errors)
+  }
+
+  /**
+   * Implement the `crawl` function using the helpers provided in this object.
+   */
+  def crawl[E](
+    seeds     : Set[URL],
+    router    : URL => Set[URL],
+    processor : (URL, String) => IO[E, Unit]
+  ): ZIO[Blocking with Console, Nothing, List[E]] = ???
 
   final case class URL private (parsed: io.lemonlabs.uri.Url) {
     import io.lemonlabs.uri._
@@ -991,17 +1056,15 @@ object parallel_web_crawler {
   object URL {
     import io.lemonlabs.uri._
 
-    def apply(url: String): Option[URL] =
+    def make(url: String): Option[URL] =
       scala.util.Try(AbsoluteUrl.parse(url)).toOption match {
         case None         => None
         case Some(parsed) => Some(new URL(parsed))
       }
   }
 
-  private val blockingPool = java.util.concurrent.Executors.newCachedThreadPool()
-
-  def getURL(url: URL): ZIO[Blocking, Exception, String] =
-    blocking.interruptible(scala.io.Source.fromURL(url.url)(scala.io.Codec.UTF8).mkString).refineOrDie {
+  def getURL(url: URL): ZIO[Blocking with Console, Exception, String] =
+    putStrLn(s"Getting URL: $url") *> blocking.interruptible(scala.io.Source.fromURL(url.url)(scala.io.Codec.UTF8).mkString).refineOrDie {
       JustExceptions
     }
 
@@ -1014,17 +1077,17 @@ object parallel_web_crawler {
 
         for {
           m   <- matches
-          url <- URL(m).toList ++ root.relative(m).toList
+          url <- URL.make(m).toList ++ root.relative(m).toList
         } yield url
       })
       .getOrElse(Nil)
   }
 
   object test {
-    val Home          = URL("http://scalaz.org").get
-    val Index         = URL("http://scalaz.org/index.html").get
-    val ScaladocIndex = URL("http://scalaz.org/scaladoc/index.html").get
-    val About         = URL("http://scalaz.org/about").get
+    val Home          = URL.make("http://scalaz.org").get
+    val Index         = URL.make("http://scalaz.org/index.html").get
+    val ScaladocIndex = URL.make("http://scalaz.org/scaladoc/index.html").get
+    val About         = URL.make("http://scalaz.org/about").get
 
     val SiteIndex =
       Map(
