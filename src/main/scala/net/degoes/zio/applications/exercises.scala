@@ -1014,14 +1014,34 @@ object hangman extends App {
 }
 
 object parallel_web_crawler {
-  case class CrawlState[E](visited: Set[URL], errors: List[E]) {
+  /**
+   *  Use the `effectBlocking` combinator to safely import the Scala `Source.fromURL`
+   * side-effect into a purely functional ZIO effect.
+   */
+  def getURL(url: URL): ZIO[Blocking, Exception, String] = {
+    // def effectBlocking[A](sideEffect: => A): ZIO[Blocking, Throwable, A]
+    import scalaz.zio.blocking.effectBlocking
+
+    def getURLImpl(url: URL): String = 
+      scala.io.Source.fromURL(url.url)(scala.io.Codec.UTF8).mkString
+
+    effectBlocking(???).refineOrDie {
+      case e : Exception => e
+    }
+  }
+
+  final case class CrawlState[E](visited: Set[URL], errors: List[E]) {
     def visitAll(urls: Set[URL]): CrawlState[E] = copy(visited = visited ++ urls)
 
-    def log(e: E): CrawlState[E] = copy(errors = e :: errors)
+    def logError(e: E): CrawlState[E] = copy(errors = e :: errors)
   }
 
   /**
    * Implement the `crawl` function using the helpers provided in this object.
+   * {{{
+   * def getURL(url: URL): ZIO[Blocking, Exception, String]
+   * def extractURLs(root: URL, html: String): List[URL]
+   * }}}
    */
   def crawl[E](
     seeds     : Set[URL],
@@ -1029,6 +1049,9 @@ object parallel_web_crawler {
     processor : (URL, String) => IO[E, Unit]
   ): ZIO[Blocking with Console, Nothing, List[E]] = ???
 
+  /**
+   * A data structure representing a structured URL, with a smart constructor.
+   */
   final case class URL private (parsed: io.lemonlabs.uri.Url) {
     import io.lemonlabs.uri._
 
@@ -1063,11 +1086,9 @@ object parallel_web_crawler {
       }
   }
 
-  def getURL(url: URL): ZIO[Blocking with Console, Exception, String] =
-    putStrLn(s"Getting URL: $url") *> blocking.interruptible(scala.io.Source.fromURL(url.url)(scala.io.Codec.UTF8).mkString).refineOrDie {
-      JustExceptions
-    }
-
+  /**
+   * A function that extracts URLs from a given web page.
+   */
   def extractURLs(root: URL, html: String): List[URL] = {
     val pattern = "href=[\"\']([^\"\']+)[\"\']".r
 

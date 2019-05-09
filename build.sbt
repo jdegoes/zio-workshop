@@ -1,11 +1,11 @@
-val ZIOVersion = "1.0-RC3"
+val ZIOVersion = "1.0-RC4"
 
 lazy val root = project
   .in(file("."))
   .settings(
     name := "zio-workshop",
     organization := "net.degoes",
-    scalaVersion := "2.12.6",
+    scalaVersion := "2.12.8",
     initialCommands in Compile in console := """
                                                |import scalaz._
                                                |import scalaz.zio._
@@ -23,20 +23,11 @@ addCommandAlias("check", "all scalafmtSbtCheck scalafmtCheck test:scalafmtCheck"
 
 libraryDependencies ++= Seq(
   // Scalaz-zio
-  "org.scalaz" %% "scalaz-zio" % ZIOVersion,
-//  "org.scalaz" %% "scalaz-zio-future" % ZIOVersion,
+  "org.scalaz" %% "scalaz-zio"         % ZIOVersion,
+  "org.scalaz" %% "scalaz-zio-streams" % ZIOVersion,
   // URL parsing
-  "io.lemonlabs" %% "scala-uri" % "1.4.1",
-  // Ammonite
-  "com.lihaoyi" % "ammonite" % "1.1.2" % "test" cross CrossVersion.full
+  "io.lemonlabs" %% "scala-uri" % "1.4.1"
 )
-
-// Ammonite REPL
-sourceGenerators in Test += Def.task {
-  val file = (sourceManaged in Test).value / "amm.scala"
-  IO.write(file, """object amm extends App { ammonite.Main().run() }""")
-  Seq(file)
-}.taskValue
 
 scalacOptions in Compile in console := Seq(
   "-Ypartial-unification",
