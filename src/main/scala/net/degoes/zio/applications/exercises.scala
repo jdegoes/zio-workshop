@@ -1047,7 +1047,9 @@ object parallel_web_crawler {
     seeds     : Set[URL],
     router    : URL => Set[URL],
     processor : (URL, String) => IO[E, Unit]
-  ): ZIO[Blocking with Console, Nothing, List[E]] = ???
+  ): ZIO[Blocking, Nothing, List[E]] = {
+    ???
+  }
 
   /**
    * A data structure representing a structured URL, with a smart constructor.
