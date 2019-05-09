@@ -1030,10 +1030,10 @@ object parallel_web_crawler {
     }
   }
 
-  final case class CrawlState[E](visited: Set[URL], errors: List[E]) {
+  final case class CrawlState[+E](visited: Set[URL], errors: List[E]) {
     def visitAll(urls: Set[URL]): CrawlState[E] = copy(visited = visited ++ urls)
 
-    def logError(e: E): CrawlState[E] = copy(errors = e :: errors)
+    def logError[E1 >: E](e: E1): CrawlState[E1] = copy(errors = e :: errors)
   }
 
   /**
@@ -1048,6 +1048,8 @@ object parallel_web_crawler {
     router    : URL => Set[URL],
     processor : (URL, String) => IO[E, Unit]
   ): ZIO[Blocking, Nothing, List[E]] = {
+    def loop(seeds: Set[URL], ref: Ref[CrawlState[E]]): ZIO[Blocking, Nothing, Unit] = ???
+
     ???
   }
 
