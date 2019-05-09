@@ -1016,7 +1016,8 @@ object hangman extends App {
 object parallel_web_crawler {
   /**
    *  Use the `effectBlocking` combinator to safely import the Scala `Source.fromURL`
-   * side-effect into a purely functional ZIO effect.
+   * side-effect into a purely functional ZIO effect, using `refineOrDie` to narrow
+   * the `Throwable` error to `Exceptiono`.
    */
   def getURL(url: URL): ZIO[Blocking, Exception, String] = {
     // def effectBlocking[A](sideEffect: => A): ZIO[Blocking, Throwable, A]
@@ -1025,9 +1026,7 @@ object parallel_web_crawler {
     def getURLImpl(url: URL): String = 
       scala.io.Source.fromURL(url.url)(scala.io.Codec.UTF8).mkString
 
-    effectBlocking(???).refineOrDie {
-      case e : Exception => e
-    }
+    ???
   }
 
   final case class CrawlState[+E](visited: Set[URL], errors: List[E]) {
@@ -1048,8 +1047,9 @@ object parallel_web_crawler {
     router    : URL => Set[URL],
     processor : (URL, String) => IO[E, Unit]
   ): ZIO[Blocking, Nothing, List[E]] = {
-    def loop(seeds: Set[URL], ref: Ref[CrawlState[E]]): ZIO[Blocking, Nothing, Unit] = ???
-
+    def loop(seeds: Set[URL], ref: Ref[CrawlState[E]]): ZIO[Blocking, Nothing, Unit] = 
+      ???
+    
     ???
   }
 
