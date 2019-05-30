@@ -16,7 +16,12 @@ object effects {
      * Implement `flatMap` for every type of `Console[A]` to turn it into a
      * `Console[B]` using the function `f`.
      */
-    final def flatMap[B](f: A => Console[B]): Console[B] = ???
+    final def flatMap[B](f: A => Console[B]): Console[B] = 
+      self match {
+        case Console.ReadLine(next) => ???
+        case Console.WriteLine(line, next) => ???
+        case Console.Return(value) => ???
+      }
 
     final def map[B](f: A => B): Console[B] = flatMap(f andThen (Console.succeed(_)))
 
@@ -58,7 +63,8 @@ object effects {
   val askName: Console[Unit] = ???
 
   /**
-   * Using the helper functions, write a program that reads the name of the user.
+   * Using the helper functions, write a program that reads a line of input from
+   * the user.
    */
   val readName: Console[String] = ???
 
@@ -140,7 +146,7 @@ object effects {
   class Thunk[A](val unsafeRun: () => A) {
     def map[B](ab: A => B): Thunk[B]             = ???
     def flatMap[B](afb: A => Thunk[B]): Thunk[B] = ???
-    def attempt: Thunk[Either[Throwable, A]]     = ???
+    def either: Thunk[Either[Throwable, A]]      = ???
   }
   object Thunk {
     def succeed[A](a: => A): Thunk[A]   = ???
