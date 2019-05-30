@@ -857,8 +857,8 @@ object zio_environment {
    * and delegate to the functions inside the `Config` service.
    */
   object helpers {
-    override val port: ZIO[Config, Nothing, Int] = ???
-    override val host: ZIO[Config, Nothing, String] = ???
+    val port: ZIO[Config, Nothing, Int] = ???
+    val host: ZIO[Config, Nothing, String] = ???
   }
 
   /**
