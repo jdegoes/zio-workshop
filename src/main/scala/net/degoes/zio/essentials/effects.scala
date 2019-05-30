@@ -16,11 +16,11 @@ object effects {
      * Implement `flatMap` for every type of `Console[A]` to turn it into a
      * `Console[B]` using the function `f`.
      */
-    final def flatMap[B](f: A => Console[B]): Console[B] = 
+    final def flatMap[B](f: A => Console[B]): Console[B] =
       self match {
-        case Console.ReadLine(next) => ???
+        case Console.ReadLine(next)        => ???
         case Console.WriteLine(line, next) => ???
-        case Console.Return(value) => ???
+        case Console.Return(value)         => ???
       }
 
     final def map[B](f: A => B): Console[B] = flatMap(f andThen (Console.succeed(_)))

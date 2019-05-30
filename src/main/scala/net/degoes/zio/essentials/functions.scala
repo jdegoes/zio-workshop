@@ -12,7 +12,7 @@ object functions {
 
   /**
    * EXERCISE 1
-   * 
+   *
    * Convert the following partial procedure into a function.
    */
   def parseInt1(s: String): Int   = s.toInt
@@ -20,7 +20,7 @@ object functions {
 
   /**
    * EXERCISE 2
-   * 
+   *
    * Convert the following partial procedure into a function.
    */
   def head1[A](l: List[A]): A    = l.head
@@ -28,7 +28,7 @@ object functions {
 
   /**
    * EXERCISE 3
-   * 
+   *
    * Convert the following non-deterministic procedure into a deterministic function.
    */
   def increment1: Int              = scala.util.Random.nextInt(0) + 1
@@ -36,15 +36,15 @@ object functions {
 
   /**
    * EXERCISE 4
-   * 
+   *
    * Convert the following non-deterministic procedure into a deterministic function.
    */
   def nextDay1: LocalDate        = LocalDate.now.plusDays(1)
   def nextDay2( /* ??? */ ): ??? = ???
 
- /**
+  /**
    * EXERCISE 5
-   * 
+   *
    * Convert the following side-effecting procedure into a pure function.
    */
   def get1(a: Int): Int = {
@@ -55,7 +55,7 @@ object functions {
 
   /**
    * EXERCISE 6
-   * 
+   *
    * Convert the following side-effecting procedure into a pure function.
    */
   def updateArray1[A](arr: Array[A], i: Int, f: A => A): Unit =
@@ -64,7 +64,7 @@ object functions {
 
   /**
    * EXERCISE 7
-   * 
+   *
    * Design a purely functional API for drawing a bitmap image on a canvas.
    */
   trait Draw {

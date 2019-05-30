@@ -201,7 +201,7 @@ object zio_parallelism {
     case object Secondary extends Database
   }
   def getUserById(userId: Int, db: Database): Task[User] = ???
-  def getUserById(userId: Int): Task[User]               = 
+  def getUserById(userId: Int): Task[User] =
     ???
 
   /**
@@ -686,7 +686,7 @@ object zio_schedule {
    * and the `everySecond` schedule, create a schedule that repeats fives times,
    * evey second.
    */
-  val fiveTimesEverySecond =  ???
+  val fiveTimesEverySecond = ???
 
   /**
    *  Using the `ZIO#repeat`, repeat the action
@@ -765,5 +765,5 @@ object zio_schedule {
 
 object zio_stm {
   // TRef[A]
-  // STM[E, A]    
+  // STM[E, A]
 }

@@ -32,7 +32,7 @@ object circuit_breaker extends App {
 object hangman extends App {
 
   /**
-   * Create a hangman game that requires the capability to perform `Console` and 
+   * Create a hangman game that requires the capability to perform `Console` and
    * `Random` effects.
    */
   lazy val myGame: ZIO[Console with Random, IOException, Unit] = ???
@@ -74,13 +74,13 @@ object hangman extends App {
   }
 
   /**
-   * Implement an effect that gets a single, lower-case character from 
+   * Implement an effect that gets a single, lower-case character from
    * the user.
    */
   lazy val getChoice: ZIO[Console, IOException, Char] = ???
 
   /**
-   * Implement an effect that prompts the user for their name, and 
+   * Implement an effect that prompts the user for their name, and
    * returns it.
    */
   lazy val getName: ZIO[Console, IOException, String] = ???
@@ -973,47 +973,48 @@ object hangman extends App {
   lazy val myGameIO: UIO[Unit] = myGame ?
 
   /**
-   * Implement the `runScenario` method according to its type. Hint: You 
+   * Implement the `runScenario` method according to its type. Hint: You
    * will have to use `provide` on `TestModule`.
    */
   def runScenario(testData: TestData): IO[IOException, TestData] = ???
 
   case class TestData(
-    output   : List[String],
-    input    : List[String],
-    integers : List[Int]
+    output: List[String],
+    input: List[String],
+    integers: List[Int]
   ) {
-    def render: String = 
+    def render: String =
       output.reverse.mkString("\n")
   }
   case class TestModule(ref: Ref[TestData]) extends Random with Console {
     val console = new Console.Service[Any] {
-      val getStrLn: IO[IOException, String] = 
+      val getStrLn: IO[IOException, String] =
         ref.modify(data => (data.input.head, data.copy(input = data.input.tail)))
-      def putStr(line: String): UIO[Unit] = 
+      def putStr(line: String): UIO[Unit] =
         ref.update(data => data.copy(output = line :: data.output)).void
       def putStrLn(line: String): UIO[Unit] = putStr(line + "\n")
     }
 
     val random = new Random.Service[Any] {
-      val nextBoolean: UIO[Boolean] = UIO(false)
+      val nextBoolean: UIO[Boolean]                           = UIO(false)
       def nextBytes(length: Int): UIO[scalaz.zio.Chunk[Byte]] = UIO(Chunk.empty)
-      val nextDouble: UIO[Double] = UIO(0.0)
-      val nextFloat: UIO[Float] = UIO(0.0F)
-      val nextGaussian: UIO[Double] = UIO(0.0)
-      val nextInt: UIO[Int] = ref.modify(data => (data.integers.head, data.copy(integers = data.integers.tail)))
-      def nextInt(n: Int): UIO[Int] = ref.modify(data => (data.integers.head, data.copy(integers = data.integers.tail)))
-      val nextLong: UIO[Long] = UIO(0L)
-      val nextPrintableChar: UIO[Char] = UIO('A')
-      def nextString(length: Int): UIO[String] = UIO("foo")
+      val nextDouble: UIO[Double]                             = UIO(0.0)
+      val nextFloat: UIO[Float]                               = UIO(0.0f)
+      val nextGaussian: UIO[Double]                           = UIO(0.0)
+      val nextInt: UIO[Int]                                   = ref.modify(data => (data.integers.head, data.copy(integers = data.integers.tail)))
+      def nextInt(n: Int): UIO[Int]                           = ref.modify(data => (data.integers.head, data.copy(integers = data.integers.tail)))
+      val nextLong: UIO[Long]                                 = UIO(0L)
+      val nextPrintableChar: UIO[Char]                        = UIO('A')
+      def nextString(length: Int): UIO[String]                = UIO("foo")
     }
   }
 
-  override def run(args: List[String]): ZIO[Environment, Nothing, Int] = 
+  override def run(args: List[String]): ZIO[Environment, Nothing, Int] =
     myGame.fold(_ => 1, _ => 0)
 }
 
 object parallel_web_crawler {
+
   /**
    *  Use the `effectBlocking` combinator to safely import the Scala `Source.fromURL`
    * side-effect into a purely functional ZIO effect, using `refineOrDie` to narrow
@@ -1023,7 +1024,7 @@ object parallel_web_crawler {
     // def effectBlocking[A](sideEffect: => A): ZIO[Blocking, Throwable, A]
     import scalaz.zio.blocking.effectBlocking
 
-    def getURLImpl(url: URL): String = 
+    def getURLImpl(url: URL): String =
       scala.io.Source.fromURL(url.url)(scala.io.Codec.UTF8).mkString
 
     ???
@@ -1043,13 +1044,13 @@ object parallel_web_crawler {
    * }}}
    */
   def crawl[E](
-    seeds     : Set[URL],
-    router    : URL => Set[URL],
-    processor : (URL, String) => IO[E, Unit]
+    seeds: Set[URL],
+    router: URL => Set[URL],
+    processor: (URL, String) => IO[E, Unit]
   ): ZIO[Blocking, Nothing, List[E]] = {
-    def loop(seeds: Set[URL], ref: Ref[CrawlState[E]]): ZIO[Blocking, Nothing, Unit] = 
+    def loop(seeds: Set[URL], ref: Ref[CrawlState[E]]): ZIO[Blocking, Nothing, Unit] =
       ???
-    
+
     ???
   }
 
