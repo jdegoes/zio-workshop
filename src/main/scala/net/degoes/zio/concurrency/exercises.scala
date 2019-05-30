@@ -16,210 +16,221 @@ import scala.concurrent.duration.Duration
 object zio_fibers {
 
   /**
-   * A Fiber is a lightweight Thread of execution
-   * They are spawned by forking an IO value, they take the types of the IO
-   * every value in ZIO is described in IO
-   * ZIO#fork describe a computation that never fails and produces a computation in a separated Fiber
-   * That helps us to build concurrent and non blocking programs
+   * A Fiber is a lightweight Thread of execution. They are spawned by forking
+   * an effect, they take the types of the effect.
+   *
+   * ZIO#fork describes a computation that never fails, and succeeds in producing
+   * the fiber, which is a "handle" to the running computation.
    */
   /**
-   * Using `ZIO#fork` Start a task that fails with "oh no!" in a separated Fiber
-   * Identify the correct types
+   * EXERCISE 1
+   *
+   * Using `ZIO#fork`, start an effect that fails with "oh no!" in a separate
+   * fiber.
    */
-  val failedF: UIO[Fiber[???, ???]] = IO.fail("oh no!") ?
+  val failedF: UIO[Fiber[String, Nothing]] = IO.fail("oh no!") ?
 
   /**
-   *  Using `ZIO#fork` Start a task that produces an int in a separated Fiber
-   * Identify the correct types
+   * EXERCISE 2
+   *
+   * Using `ZIO#fork`, start an effect that succeeds with an integer in a
+   * separate fiber.
    */
-  val succeededF: UIO[Fiber[???, ???]] = IO.succeed(1) ?
+  val succeededF: UIO[Fiber[Nothing, Int]] = IO.succeed(1) ?
 
   /**
-   *  Using `ZIO#fork` Start a `console.putStrLn` in a new fiber
-   *  Identify the correct types (!)
+   * EXERCISE 3
+   *
+   * Using `ZIO#fork`, start the `console.putStrLn` effect in a separate
+   * fiber.
    */
-  val putStrLnF: UIO[Fiber[???, ???]] = console.putStrLn("Hello ZIO") ?
+  val putStrLnF: UIO[Fiber[Nothing, Unit]] = console.putStrLn("Hello ZIO") ?
 
   /**
-   * Print in the console forever without blocking the main Fiber
-   *  Identify the correct types (!)
+   * EXERCISE 4
+   *
+   * Using a combination of `ZIO#forever` and `ZIO#fork`, print text to the
+   * console in an infinite loop.
    */
-  val putStrLForeverF: ZIO[Console, Nothing, Fiber[???, ???]] =
+  val putStrLForeverF: ZIO[Console, Nothing, Fiber[Nothing, Nothing]] =
     console.putStrLn("Hello ZIO") ?
 
   /**
-   * Get the value of the following Fibers using `Fiber#join`
-   * Identify the correct types.
+   * EXERCISE 8
+   *
+   * Construct a "trivial" fiber that has already succeeded with an integer
+   * value using `Fiber.succeed`.
    */
-  val fiber1: IO[???, ???] = Fiber.succeed[Nothing, Int](1) ?
-  val fiber2: IO[???, ???] = Fiber.fail[Int](1) ?
-  val fiber3: IO[???, ???] = Fiber.fail[Exception](new Exception("error!")) ?
+  val trivialSuccess: Fiber[Nothing, Int] = ???
 
   /**
-   * Using `await` suspend the awaiting fibers until the result will be ready and
-   * returns if the fiber is Succeed or Failed
-   * Identify the correct types.
+   * EXERCISE 9
+   *
+   * Construct a "trivial" fiber that has already failed with a string
+   * value using `Fiber.fail`.
    */
-  val await1: UIO[???] = Fiber.succeed[Nothing, Int](1) ?
-  val await2: UIO[???] = Fiber.fromEffect(IO.succeed("run forever").forever) ?
-  val await3: UIO[???] = Fiber.fail[Int](1) ?
-  val await4: UIO[???] = Fiber.fail[Exception](new Exception("error!")) ?
+  val trivialFailure: Fiber[String, Nothing] = ???
 
   /**
-   *   Using `poll` observe if the Fiber is terminated
-   *   Identify the correct types.
+   * EXERCISE 10
+   *
+   * Using `Fiber#join`, join the main fiber to the fibers constructed below,
+   * which yields the value of the (joinee) fiber to the main (joiner) fiber.
    */
-  val observe1: UIO[???] = Fiber.succeed[Nothing, Int](1) ?
-  val observe2: UIO[???] = Fiber.fromEffect(IO.succeed("run forever").forever) ?
-  val observe3: UIO[???] = Fiber.fail[Int](1) ?
-  val observe4: UIO[???] = Fiber.fail[Exception](new Exception("error!")) ?
+  val fiber1: IO[Nothing, Int]       = Fiber.succeed[Nothing, Int](1) ?
+  val fiber2: IO[Int, Nothing]       = Fiber.fail[Int](1) ?
+  val fiber3: IO[Exception, Nothing] = Fiber.fail[Exception](new Exception("error!")) ?
 
   /**
-   * Using `flatMap` and `interrupt` to interrupt the fiber `putStrLForeverF`
-   * Identify the correct types
+   * EXERCISE 11
+   *
+   * Using `Fiber#await`, suspend the main (joiner) fibers to the below fibers,
+   * until they have run their course and produce `Exit` values.
    */
-  val interruptedF: ZIO[Console, Nothing, Exit[???, ???]] =
+  val await1: UIO[Exit[Nothing, Int]]       = Fiber.succeed[Nothing, Int](1) ?
+  val await2: UIO[Exit[Nothing, Nothing]]   = Fiber.fromEffect(IO.succeed("run forever").forever) ?
+  val await3: UIO[Exit[Int, Nothing]]       = Fiber.fail[Int](1) ?
+  val await4: UIO[Exit[Exception, Nothing]] = Fiber.fail[Exception](new Exception("error!")) ?
+
+  /**
+   * EXERCISE 12
+   *
+   * Using `Fiber#poll`, observe to see if the Fiber is done executing.
+   */
+  val observe1: UIO[Exit[Nothing, Int]]       = Fiber.succeed[Nothing, Int](1) ?
+  val observe2: UIO[Exit[Nothing, Nothing]]   = Fiber.fromEffect(IO.succeed("run forever").forever) ?
+  val observe3: UIO[Exit[Int, Nothing]]       = Fiber.fail[Int](1) ?
+  val observe4: UIO[Exit[Exception, Nothing]] = Fiber.fail[Exception](new Exception("error!")) ?
+
+  /**
+   * EXERCISE 13
+   *
+   * Using `ZIO#flatMap` and `Fiber#interrupt`, interrupt the fiber `putStrLForeverF`.
+   */
+  val interruptedF: ZIO[Console, Nothing, Exit[Nothing, Nothing]] =
     putStrLForeverF ?
 
   /**
-   * Write a program that asks 2 users for their name and greets them concurrently,
-   * At the end join the Fibers and return the result.
-   * Use for-comprehension or `flatMap` and `map`.
-   *  Identify the correct types
+   * EXERCISE 14
+   *
+   * By using `ZIO#fork` and `Fiber#join`, make an effect that computes two
+   * fibonacci numbers in parallel.
    */
-  val sayHello: ZIO[???, ???, Unit] =
-    ???
-  val sayHelloBoth: ZIO[???, ???, Unit] = sayHello ?
+  def fibInt(n: Int): UIO[Int]         = if (n <= 1) IO.succeed(n) else fibInt(n - 2).zipWith(fibInt(n - 1))(_ + _)
+  val computeFib10: UIO[Int]           = fibInt(10)
+  val computeFib20: UIO[Int]           = fibInt(20)
+  val computeBothFibs: UIO[(Int, Int)] = ???
 
   /**
-   * Write a program that computes the sum of a given List of Int and
-   * checks if all elements are positive concurrently
-   * At the end join the Fibers and return a tuple of their results using `zip`
+   * EXERCISE 15
+   *
+   * Using `FiberRef.make`, create a `FiberRef` that is initially set to 0.
    */
-  def sumPositive(as: UIO[List[Int]]): UIO[(Int, Boolean)] = ???
+  val fiberRef: UIO[FiberLocal[Int]] = ???
 
   /**
-   * Using `zipWith`. Write a program that start 2 Fibers with
-   * pure values of type int and compute their sum
-   * At the end join the Fibers and return a the result
-   * Identify the correct return type.
+   * EXERCISE 16
+   *
+   * Using `FiberRef#set`, set the passed in `FiberRef` to 42.
    */
-  def sum(a: UIO[Int], b: UIO[Int]): UIO[Int] = ???
-
-  /**
-   * Create a FiberLocal
-   */
-  val local: UIO[FiberLocal[Int]] = ???
-
-  /**
-   * set a value 42 to `local` using `flatMap` and `LocalFiber#set`
-   * and then call `FiberLocal#get`
-   */
-  val updateLocal: UIO[Option[Int]] = ???
-
-  /**
-   * Using `locally`. Create FiberLocal that automatically sets
-   * a value "Hello" and frees data and return that value
-   */
-  val locally: UIO[Option[String]] = ???
-
-  /**
-   * Write a program that executes 2 tasks in parallel
-   * combining their results with the specified in a tuple. If
-   * either side fails, then the other side will be interrupted.
-   */
-  def par[A, B](io1: Task[A], io2: Task[B]): Task[(A, B)] = ???
+  def updateRef(ref: Ref[Int]): UIO[Unit] = ???
 }
 
 object zio_parallelism {
 
   /**
-   * Using `zipPar` Write a program that finds the first and the last user in parallel
-   * that satisfies a given condition for a given list of users
-   * Identify the correct type.
+   * EXERCISE 1
+   *
+   * Using `ZIO#zipPar`, make an effect that finds the first and last user
+   * whose subscription date satisfies some predicate.
    */
   case class User(id: Int, name: String, subscription: LocalDate)
 
-  def findFirstAndLast(as: List[User])(p: LocalDate => Boolean): ??? = {
-    val findFirst: UIO[Option[User]] = Task.effectTotal(as.find(user => p(user.subscription)))
-    val findLast: UIO[Option[User]]  = Task.effectTotal(as.reverse.find(user => p(user.subscription)))
+  def findFirstAndLast(users: List[User])(p: LocalDate => Boolean): ??? = {
+    val findFirst: UIO[Option[User]] = Task.effectTotal(users.find(user => p(user.subscription)))
+    val findLast: UIO[Option[User]]  = Task.effectTotal(users.reverse.find(user => p(user.subscription)))
 
     ???
   }
 
   /**
-   * Using `ZIO.collectAllPar`. Write a program that get users with specified ids in parallel.
-   * Identify the correct type.
+   * EXERCISE 2
+   *
+   * Using `ZIO.collectAllPar`, make an effect that retrieves all users with the
+   * specified ids.
    */
   val users: Map[Int, User] = Map(
     1 -> User(1, "u1", LocalDate.of(2018, 9, 22)),
     2 -> User(2, "u2", LocalDate.of(2018, 8, 6))
   )
 
-  def getUser(id: Int): IO[String, User] = ???
+  def getUser(id: Int): IO[String, User] = IO.effect(users(id)).mapError(_.getMessage)
 
-  def allUser(ids: List[Int]): IO[String, ???] = ???
+  def getAllUsers(ids: List[Int]): IO[String, ???] = ???
 
   /**
-   * Using `ZIO.foreachPar`. Write a program that displays the information of users (using `console.putStrLn`)
-   * in parallel.
-   * Identify the correct ZIO type.
+   * EXERCISE 3
+   *
+   * Using `ZIO.foreachPar`, make an effect that prints out many users in
+   * parallel, using the `printUser` function.
    */
-  def printAll(users: List[User]): ??? = ???
+  def printUser(user: User): UIO[Unit]             = UIO.effectTotal(println(s"${user.toString}"))
+  def printAll(users: List[User]): UIO[List[Unit]] = ???
 
   def fib(n: Int): UIO[BigInt] =
     if (n <= 1) UIO.succeed(BigInt(n))
     else fib(n - 1).zipWith(fib(n - 2))(_ + _)
 
   /**
-   * Compute the first 20 fibonacci numbers in parallel.
+   * EXERCISE 4
+   *
+   * Using `ZIO.foreachPar`, make an effect that computes the first 20
+   * fibonacci numbers in parallel.
    */
   val firstTwentyFibs: UIO[List[BigInt]] =
     ???
 
   /**
-   * Using `ZIO.foreachPar`. Write a program that compute the sum of action1, action2 and action3
+   * EXERCISE 5
+   *
+   * Using `ZIO#zipPar`, make an effect that sums the integers produced by
+   * the following effects.
    */
-  val action1: ZIO[Clock, Nothing, Int] = IO.succeed(1).delay(10.seconds)
-  val action2: ZIO[Clock, Nothing, Int] = IO.succeed(2).delay(1.second)
-  val action3: ZIO[Clock, Nothing, Int] = IO.succeed(2).delay(1.second)
+  val action1: ZIO[Clock, Nothing, Int] = IO.succeed(3).delay(1.seconds)
+  val action2: ZIO[Clock, Nothing, Int] = IO.succeed(2).delay(2.second)
+  val action3: ZIO[Clock, Nothing, Int] = IO.succeed(1).delay(3.second)
   val sum: ZIO[Clock, Nothing, Int]     = ???
 
   /**
-   * Rewrite `printAll` specifying the number of fibers
-   * Identify the correct ZIO type.
-   */
-  def printAll_(users: List[IO[String, List[User]]]): ??? = ???
-
-  /**
-   * Using `ZIO#race`. Race queries against primary and secondary databases
-   * to return whichever one succeeds first.
+   * EXERCISE 6
+   *
+   * Using `ZIO#race`, make an effect that races queries against primary
+   * and secondary databases, returning whichever succeeds first.
    */
   sealed trait Database
   object Database {
     case object Primary   extends Database
     case object Secondary extends Database
   }
+  /* Assume this onoe is implemented: */
   def getUserById(userId: Int, db: Database): Task[User] = ???
-  def getUserById(userId: Int): Task[User] =
+  /* Implement this one: */
+  def getUserById1(userId: Int): Task[User] =
     ???
 
   /**
-   * Using `raceAttempt` Race `leftContestent1` and `rightContestent1` to see
-   * which one finishes first and returns Left if the left action will be the winner
-   * otherwise it returns the successful value in Right
+   * EXERCISE 7
+   *
+   * Using `ZIO#raceAttempt`, make an effect that races the two database
+   * queries, but this time succeeding or failing with the first one to finish.
    */
-  val raced2: ??? = ???
+  def getUserById2(userId: Int): Task[User] = ???
 
   /**
-   * Using `raceWith`. Race `a` and `b` and print out the winner's result
-   */
-  val a: UIO[Int]                                  = UIO.succeedLazy((1 to 1000).sum)
-  val b: UIO[Int]                                  = UIO.succeedLazy((1 to 10).sum)
-  val firstCompleted1: ZIO[Console, Nothing, Unit] = ???
-
-  /**
-   * Using `raceAll` return the first completed action.
+   * EXERCISE 8
+   *
+   * Using `ZIO.raceAll`, make an effect that races the below effects to return
+   * the winner.
    */
   val a1: ZIO[Clock, Nothing, Int]             = IO.succeed(1).delay(10.seconds)
   val a2: ZIO[Clock, Nothing, Int]             = IO.succeed(2).delay(1.second)
@@ -231,13 +242,17 @@ object zio_parallelism {
 object zio_ref {
 
   /**
-   * Using `Ref.make` constructor, create a `Ref` that is initially `0`.
+   * EXERCISE 1
+   *
+   * Using `Ref.make`, create a `Ref` that is initially `0`.
    */
   val makeZero: UIO[Ref[Int]] = 0 ?
 
   /**
-   * Using `Ref#get` and `Ref#set`, change the
-   * value to be 10 greater than its initial value. Return the new value.
+   * EXERCISE 2
+   *
+   * Using `Ref#get` and `Ref#set`, change the value to be 10 greater than its
+   * initial value. Return the new value.
    */
   val incrementedBy10: UIO[Int] =
     for {
@@ -247,8 +262,9 @@ object zio_ref {
     } yield value
 
   /**
+   * EXERCISE 3
+   *
    * Using `Ref#update` to atomically increment the value by 10.
-   * Return the new value.
    */
   val atomicallyIncrementedBy10: UIO[Int] =
     for {
@@ -257,7 +273,9 @@ object zio_ref {
     } yield value
 
   /**
-   * Refactor this contentious code to be atomic using `Ref#update`.
+   * EXERCISE 4
+   *
+   * Using `Ref#update`, refactor this contentious code to be atomic.
    */
   def makeContentious1(n: Int): UIO[Fiber[Nothing, List[Nothing]]] =
     Ref.make(0).flatMap(ref => IO.forkAll(List.fill(n)(ref.get.flatMap(value => ref.set(value + 10)).forever)))
@@ -265,8 +283,10 @@ object zio_ref {
     ???
 
   /**
-   * Using the `Ref#modify` to atomically increment the value by 10,
-   * but return the old value, converted to a string.
+   * EXERCISE 5
+   *
+   * Using `Ref#modify`, atomically increment the value by 10, but return the
+   * old value, converted to a string.
    */
   val atomicallyIncrementedBy10PlusGet: UIO[String] =
     for {
@@ -275,8 +295,10 @@ object zio_ref {
     } yield value
 
   /**
-   * Using `Ref#updateSome` change the state of a given ref to Active
-   * only if the state is Closed
+   * EXERCISE 6
+   *
+   * Using `Ref#updateSome`, change the state of a given ref to `Active`
+   * only if the state is `Closed`.
    */
   trait State
   case object Active extends State
@@ -286,28 +308,12 @@ object zio_ref {
     ???
 
   /**
-   * Using `Ref#modifySome` change the state to Closed only if the state was Active and return true
-   * if the state is already closed return false
+   * EXERCISE 7
+   *
+   * Using `Ref#modifySome`, change the state to `Closed` only if the state was
+   * `Active` and return true; if the state is already closed, return false.
    */
   def setClosed(ref: Ref[State], boolean: Boolean): UIO[Boolean] = ???
-
-  /**
-   * RefM allows effects in atomic operations
-   */
-  /**
-   * Create a RefM using `RefM.apply`
-   */
-  val refM: UIO[RefM[Int]] = 4 ?
-
-  /**
-   * update the refM with the square of the old state and print it out in the Console
-   */
-  val square =
-    for {
-      ref <- (??? : UIO[Ref[Int]])
-      v   <- (??? : UIO[Ref[Int]])
-    } yield v
-
 }
 
 object zio_promise {
