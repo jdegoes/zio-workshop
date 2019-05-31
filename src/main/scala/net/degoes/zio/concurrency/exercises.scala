@@ -319,13 +319,17 @@ object zio_ref {
 object zio_promise {
 
   /**
-   * Using `Promise.make` construct a promise that cannot
-   * fail but can be completed with an integer.
+   * EXERCISE 1
+   *
+   * Using `Promise.make`, construct a promise that cannot fail but can be
+   * completed with an integer.
    */
   val makeIntPromise: UIO[Promise[Nothing, Int]] =
     ???
 
   /**
+   * EXERCISE 2
+   *
    * Using `Promise.succeed`, complete a `makeIntPromise` with an integer 42
    */
   val completed1: UIO[Boolean] =
@@ -335,27 +339,23 @@ object zio_promise {
     } yield completed
 
   /**
-   * Using `Promise.fail`, try to complete `makeIntPromise`.
-   * Explain your findings
+   * EXERCISE 3
+   *
+   * Using `Promise.fail`, create a new promise that can fail with a `Error` or
+   * produce a value of type `String`, and then fail the promise with an
+   * `Error`.
    */
-  val errored1: UIO[Boolean] =
-    for {
-      promise   <- makeIntPromise
-      completed <- (promise ? : UIO[Boolean])
-    } yield completed
-
-  /**
-   * Create a new promise that can fail with a `Error` or produce a value of type `String`
-   */
-  val errored2: UIO[Boolean] =
+  val errored: UIO[Boolean] =
     for {
       promise   <- Promise.make[???, ???]
       completed <- (promise ? : UIO[Boolean])
     } yield completed
 
   /**
-   * Make a promise that might fail with `Error`or produce a value of type
-   * `Int` and interrupt it using `interrupt`.
+   * EXERCISE 4
+   *
+   * Using `Promise#interrupt`, interrupt a promise that can fail with `Error`
+   * or produce a value of type `Int`.
    */
   val interrupted: UIO[Boolean] =
     for {
@@ -364,7 +364,10 @@ object zio_promise {
     } yield completed
 
   /**
-   * Using `await` retrieve a value computed from inside another fiber
+   * EXERCISE 5
+   *
+   * Using `Promise#await`, await a value from a promise that is completed by
+   * another fiber.
    */
   val handoff1: ZIO[Console with Clock, Nothing, Int] =
     for {
@@ -376,7 +379,10 @@ object zio_promise {
     } yield value
 
   /**
-   * Using `await`. retrieve a value from a promise that was failed in another fiber.
+   * EXERCISE 6
+   *
+   * Using `Promise#await`, try to await a value from a promise that is failed
+   * by another fiber.
    */
   val handoff2: ZIO[Console with Clock, Error, Int] =
     for {
@@ -388,8 +394,10 @@ object zio_promise {
     } yield value
 
   /**
-   * Using `await`. Try to retrieve a value from a promise
-   * that was interrupted in another fiber.
+   * EXERCISE 7
+   *
+   * Using `Promise#await`, try to await a value from a promise that is
+   * interrupted by another fiber.
    */
   val handoff3: ZIO[Clock with Console, Nothing, Int] =
     for {
@@ -400,19 +408,30 @@ object zio_promise {
     } yield value
 
   /**
- * Build auto-refreshing cache using `Ref`and `Promise`
- */
+   * EXERCISE 8
+   *
+   * Build auto-refreshing cache using `Ref`and `Promise`.
+   */
+  case class CacheState[V](schedule: Schedule[V, Any])
+  trait Cache[E, V] {
+    def get: IO[E, V]
+  }
+  def makeCache[E, V](getter: IO[E, V], refresh: Schedule[V, Any]): Cache[E, V] = ???
 }
 
 object zio_queue {
 
   /**
-   * Using `Queue.bounded`, create a queue for `Int` values with a capacity of 10
+   * EXERCISE 1
+   *
+   * Using `Queue.bounded`, create a queue for `Int` values with a capacity of 10.
    */
   val makeQueue: UIO[Queue[Int]] = ???
 
   /**
-   * Place `42` into the queue using `Queue#offer`.
+   * EXERCISE 2
+   *
+   * Using `Queue#offer`, place `42` into the queue.
    */
   val offered1: UIO[Unit] =
     for {
@@ -421,7 +440,9 @@ object zio_queue {
     } yield ()
 
   /**
-   * Using `Queue#take` take an integer value from the queue
+   * EXERCISE 3
+   *
+   * Using `Queue#take`, take an integer value from the queue
    */
   val taken1: UIO[Int] =
     for {
@@ -431,6 +452,8 @@ object zio_queue {
     } yield value
 
   /**
+   * EXERCISE 4
+   *
    * In a child fiber, place 2 values into a queue, and in the main fiber, read
    *  2 values from the queue.
    */
@@ -443,6 +466,8 @@ object zio_queue {
     } yield (v1, v2)
 
   /**
+   * EXERCISE 5
+   *
    * In a child fiber, read infintely many values out of the queue and write
    * them to the console. In the main fiber, write 100 values into the queue,
    * using `ZIO.foreach` on a `List`.
@@ -455,6 +480,8 @@ object zio_queue {
     } yield vs
 
   /**
+   * EXERCISE 6
+   *
    * Using  `Queue`, `Ref`, and `Promise`, implement an "actor" like construct
    * that can atomically update the values of a counter.
    */
@@ -475,49 +502,22 @@ object zio_queue {
       _       <- IO.collectAllPar(List.fill(100)(IO.foreach((0 to 100).map(Increment(_)))(counter)))
       value   <- counter(Increment(0))
     } yield value
-
-  /**
-   * using `Queue.sliding` create a queue with capacity 3 using sliding strategy
-   */
-  val slidingQ: UIO[Queue[Int]] = ???
-
-  /**
-   * Using `Queue#offerAll`, offer 4 integer values to a sliding queue with capacity of 3
-   * and take them all using `Queue#takeAll`. What will you get as result?
-   */
-  val offer4TakeAllS: UIO[List[Int]] = for {
-    queue  <- Queue.sliding[Int](3)
-    _      <- queue.offerAll(List(1, 2, 3))
-    values <- (??? : UIO[List[Int]])
-  } yield values
-
-  /**
-   * using `Queue.dropping` create a queue with capacity 3 using sliding strategy
-   */
-  val dropingQ: UIO[Queue[Int]] = ???
-
-  /**
-   * Using `Queue#offerAll`, offer 4 integer values to a dropping queue with capacity of 3
-   * and take them all using `Queue#takeAll`. What will you get as result?
-   */
-  val offer4TakeAllD: UIO[List[Int]] = for {
-    queue  <- Queue.sliding[Int](3)
-    _      <- queue.offerAll(List(1, 2, 3))
-    values <- (??? : UIO[List[Int]])
-  } yield values
-
 }
 
 object zio_semaphore {
 
   /**
-   *Using `Semaphore.make`, create a semaphore with 1 permits.
+   * EXERCISE 1
+   *
+   * Using `Semaphore.make`, create a semaphore with 1 permits.
    */
   val semaphore: UIO[Semaphore] = ???
 
   /**
-   * Using `Semaphore#acquire` acquire permits sequentially (using IO.???) and
-   * return the number of available permits using `Semaphore#available`.
+   * EXERCISE 2
+   *
+   * Using `Semaphore#acquire`, acquire a few permits and return the number of
+   * available permits using `Semaphore#available`.
    */
   val nbAvailable1: UIO[Long] =
     for {
@@ -527,7 +527,9 @@ object zio_semaphore {
     } yield available
 
   /**
-   * Using `Semaphore#acquireN` acquire permits in parallel (using IO.???) and
+   * EXERCISE 3
+   *
+   * Using `Semaphore#acquireN`, acquire permits in a different fiber, and
    * return the number of available permits.
    */
   val nbAvailable2: UIO[Long] =
@@ -538,8 +540,9 @@ object zio_semaphore {
     } yield available
 
   /**
+   * EXERCISE 4
+   *
    * Acquire one permit and release it using `Semaphore#release`.
-   * How much permit are available?
    */
   val nbAvailable3: UIO[Long] =
     for {
@@ -550,19 +553,24 @@ object zio_semaphore {
     } yield available
 
   /**
-   * Using `Semaphore#withPermit` prepare a semaphore that once it acquires a permit
-   * putStrL("is completed")
+   * EXERCISE 5
+   *
+   * Using `Semaphore#withPermit`, print "Acquired" while the permit is acquired.
    */
-  val s: ZIO[Clock, Nothing, Unit] =
+  val s: ZIO[Clock with Console, Nothing, Unit] =
     for {
       semaphore <- Semaphore.make(1)
       p         <- Promise.make[Nothing, Unit]
-      _         <- (??? : UIO[Unit])
-      _         <- semaphore.acquire.delay(1.second).fork
+      action    = putStrLn("Acquired") *> p.succeed(())
+      _         <- semaphore.acquire
+      _         <- semaphore.withPermit(???).fork // Run in separate fiber
+      _         <- semaphore.release
       msg       <- p.await
     } yield msg
 
   /**
+   * EXERCISE 6
+   *
    * Implement `createAcceptor` to create a connection acceptor that will
    * accept at most the specified number of connections.
    */
@@ -586,39 +594,52 @@ object zio_stream {
   import scalaz.zio.stream.Stream
 
   /**
-   * Create a stream using `Stream.apply`
+   * EXERCISE 1
+   *
+   * Create a stream containing 1, 2, and 3 using `Stream.apply`
    */
   val streamStr: Stream[Nothing, Int] = ???
 
   /**
+   * EXERCISE 2
+   *
    * Create a stream using `Stream.fromIterable`
    */
   val stream1: Stream[Nothing, Int] = (1 to 42) ?
 
   /**
-   * Create a stream using `Stream.fromChunk`
+   * EXERCISE 3
+   *
+   * Create a stream using `Stream.fromChunk`.
    */
   val chunk: Chunk[Int]             = Chunk(43 to 100: _*)
   val stream2: Stream[Nothing, Int] = ???
 
   /**
-   * Make a queue and use it to create a stream using `Stream.fromQueue`
+   * EXERCISE 4
+   *
+   * Make a queue and use it to create a stream using `Stream.fromQueue`.
    */
   val stream3: UIO[Stream[Nothing, Int]] = ???
 
   /**
-   * Create a stream from an effect producing a String
-   * using `Stream.fromEffect`
+   * EXERCISE 5
+   *
+   * Create a singleton stream from an effect producing a String using
+   * `Stream.fromEffect`.
    */
   val stream4: Stream[Nothing, String] = ???
 
   /**
-   * Create a stream of ints that starts from 0 until 42,
-   * using `Stream#unfold`
+   * EXERCISE 6
+   *
+   * Create a stream of ints that starts from 0 until 42, using `Stream#unfold`.
    */
   val stream5: Stream[Nothing, Int] = ???
 
   /**
+   * EXERCISE 7
+   *
    * Using `Stream.unfoldM`, create a stream of lines of input from the user,
    * terminating when the user enters the command "exit" or "quit".
    */
@@ -627,42 +648,61 @@ object zio_stream {
   val stream6: ZStream[Console, IOException, String] = ???
 
   /**
-   * Using `withEffect` log every element.
+   * EXERCISE 8
+   *
+   * Using `Stream#withEffect`, log every element of `stream1` to the console.
    */
   val loggedInts: ZStream[Console, Nothing, Int] = stream1 ?
 
   /**
-   * Using `Stream#filter` filter the even numbers
+   * EXERCISE 9
+   *
+   * Using `Stream#filter`, filter for just the even numbers in `stream1`.
    */
-  val evenNumbrers: Stream[Nothing, Int] = stream1 ?
+  val evenNumbers: Stream[Nothing, Int] = stream1 ?
 
   /**
-   * Using `Stream#takeWhile` take the numbers that are less than 10
+   * EXERCISE 10
+   *
+   * Using `Stream#takeWhile`, take the numbers that are less than 10 from
+   * `stream1`.
    */
   val lessThan10: Stream[Nothing, Int] = stream1 ?
 
   /**
-   * Print out each value in the stream using `Stream#foreach`
+   * EXERCISE 11
+   *
+   * Using `Stream#foreach`, Print out each value in the stream.
    */
   val printAll: ZIO[Console, Nothing, Unit] = stream1 ?
 
   /**
-   * Convert every Int into String using `Stream#map`
+   * EXERCISE 12
+   *
+   * Using `Stream#map`, convert every `Int` into a `String`.
    */
   val toStr: Stream[Nothing, String] = stream1 ?
 
   /**
-   * Merge two streams together using `Stream#merge`
+   * EXERCISE 13
+   *
+   * Using `Stream#merge`, merge two streams together.
    */
   val mergeBoth: Stream[Nothing, Int] = (stream1, stream2) ?
 
   /**
-   * Create a Sink using `Sink#readWhile` that takes an input of type String and check if it's not empty
+   * EXERCISE 14
+   *
+   * Using `Sink#readWhile`, create a `Sink` that takes an input of type String
+   * and check if it's non-empty
    */
   val sink: Sink[Nothing, String, String, List[String]] = ???
 
   /**
-   * Run `sink` on the stream to get a list of non empty string
+   * EXERCISE 15
+   *
+   * Using `Stream#run`, run the stream with `sink` get a list of the first
+   * non-empty strings.
    */
   val stream                                         = Stream("Hello", "Hi", "Bonjour", "cześć", "", "Hallo", "Hola")
   val firstNonEmpty: ZIO[Any, Nothing, List[String]] = ???
@@ -672,22 +712,30 @@ object zio_stream {
 object zio_schedule {
 
   /**
+   * EXERCISE 1
+   *
    * Using `Schedule.recurs`, create a schedule that recurs 5 times.
    */
   val fiveTimes: Schedule[Any, Int] = ???
 
   /**
-   * Using the `ZIO.repeat`, repeat printing "Hello World"
-   * five times to the console.
+   * EXERCISE 2
+   *
+   * Using the `ZIO.repeat`, repeat printing "Hello World" five times to the
+   * console.
    */
   val repeated1 = putStrLn("Hello World") ?
 
   /**
-   * Using `Schedule.spaced`, create a schedule that recurs forever every 1 second
+   * EXERCISE 3
+   *
+   * Using `Schedule.spaced`, create a schedule that recurs forever every 1 second.
    */
   val everySecond: Schedule[Any, Int] = ???
 
   /**
+   * EXERCISE 4
+   *
    * Using the `&&` method of the `Schedule` object, the `fiveTimes` schedule,
    * and the `everySecond` schedule, create a schedule that repeats fives times,
    * evey second.
@@ -695,69 +743,91 @@ object zio_schedule {
   val fiveTimesEverySecond = ???
 
   /**
-   *  Using the `ZIO#repeat`, repeat the action
-   *  putStrLn("Hi hi") using `fiveTimesEverySecond`.
+   * EXERCISE 5
+   *
+   * Using the `ZIO#repeat`, repeat the action putStrLn("Hi hi") using
+   * `fiveTimesEverySecond`.
    */
   val repeated2 = putStrLn("Hi hi") ?
 
   /**
-   * Using `Schedule#andThen` the `fiveTimes`
-   * schedule, and the `everySecond` schedule, create a schedule that repeats
-   * fives times rapidly, and then repeats every second forever.
+   * EXERCISE 6
+   *
+   * Using `Schedule#andThen` the `fiveTimes` schedule, and the `everySecond`
+   * schedule, create a schedule that repeats fives times rapidly, and then
+   * repeats every second forever.
    */
   val fiveTimesThenEverySecond = ???
 
   /**
-   * Using `ZIO#retry`, retry the following error
-   * a total of five times.
+   * EXERCISE 7
+   *
+   * Using `ZIO#retry`, retry the following error a total of five times.
    */
   val error1   = IO.fail("Uh oh!")
   val retried5 = error1 ?
 
   /**
-   * Using the `Schedule#||`, the `fiveTimes` schedule,
-   * and the `everySecond` schedule, create a schedule that repeats the minimum
-   * of five times and every second.
+   * EXERCISE 8
+   *
+   * Using the `Schedule#||`, the `fiveTimes` schedule, and the `everySecond`
+   * schedule, create a schedule that repeats the minimum of five times and
+   * every second.
    */
   val fiveTimesOrEverySecond = ???
 
   /**
-   * Using `Schedule.exponential`, create an exponential schedule that starts from 10 milliseconds.
+   * EXERCISE 9
+   *
+   * Using `Schedule.exponential`, create an exponential schedule that starts
+   * from 10 milliseconds.
    */
   val exponentialSchedule: Schedule[Any, Duration] =
     ???
 
   /**
-   * Using `Schedule.jittered` produced a jittered version of
-   * `exponentialSchedule`.
+   * EXERCISE 10
+   *
+   * Using `Schedule.jittered` produced a jittered version of `exponentialSchedule`.
    */
   val jitteredExponential = exponentialSchedule ?
 
   /**
-   * Using `Schedule.whileOutput`, produce a filtered schedule from
-   * `Schedule.forever` that will halt when the number of recurrences exceeds 100.
+   * EXERCISE 11
+   *
+   * Using `Schedule.whileOutput`, produce a filtered schedule from `Schedule.forever`
+   * that will halt when the number of recurrences exceeds 100.
    */
   val oneHundred = Schedule.forever.whileOutput(???)
 
   /**
-   * Using `Schedule.identity`, produce a schedule that recurs forever,
-   * without delay, returning its inputs.
+   * EXERCISE 12
+   *
+   * Using `Schedule.identity`, produce a schedule that recurs forever, without delay,
+   * returning its inputs.
    */
   def inputs[A]: Schedule[A, A] = ???
 
   /**
-   * Using `Schedule#collect`, produce a schedule that recurs
-   * forever, collecting its inputs into a list.
+   * EXERCISE 13
+   *
+   * Using `Schedule#collect`, produce a schedule that recurs forever, collecting its
+   * inputs into a list.
    */
   def collectedInputs[A]: Schedule[A, List[A]] =
     Schedule.identity[A] ?
 
   /**
-   * Using  `*>`, combine `fiveTimes` and `everySecond` but return the output of `everySecond`.
+   * EXERCISE 14
+   *
+   * Using  `*>` (`zipRight`), combine `fiveTimes` and `everySecond` but return
+   * the output of `everySecond`.
    */
   val fiveTimesEverySecondR: Schedule[Any, Int] = ???
 
   /**
+   * EXERCISE 15
+   *
    * Produce a jittered schedule that first does exponential spacing (starting
    * from 10 milliseconds), but then after the spacing reaches 60 seconds,
    * switches over to fixed spacing of 60 seconds between recurrences, but will
