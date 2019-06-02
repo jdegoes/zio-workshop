@@ -1,7 +1,6 @@
 // Copyright(C) 2019 - John A. De Goes. All rights reserved.
 
-package net.degoes.zio
-package concurrency
+package net.degoes.zio.concurrency
 
 import java.time.LocalDate
 
@@ -10,6 +9,8 @@ import scalaz.zio.clock.Clock
 import scalaz.zio.console.{ putStrLn, Console }
 import scalaz.zio.duration._
 import scalaz.zio.stream._
+
+import net.degoes.zio._
 
 import scala.concurrent.duration.Duration
 
@@ -840,6 +841,117 @@ object zio_schedule {
 }
 
 object zio_stm {
-  // TRef[A]
-  // STM[E, A]
+  import stm._
+
+  /**
+   * EXERCISE 1
+   *
+   * Using `TRef.make`, make an `STM` effect that creates a new `TRef`
+   * initially set to 0.
+   */
+  val make1: STM[Nothing, TRef[Int]] = ???
+
+  /**
+   * EXERCISE 2
+   *
+   * Using `STM#commit`, "commit" the transaction that creates a new `TRef`
+   * initially set to zero.
+   */
+  val committed1: UIO[TRef[Int]] = make1 ?
+
+  /**
+   * EXERCISE 3
+   *
+   * Using `TRef#update`, increment the specified `TRef` by 100, and then
+   * commit that transaction using `STM#commit`.
+   */
+  def increment1(ref: TRef[Int]): UIO[Int] = ???
+
+  /**
+   * EXERCISE 4
+   *
+   * Using `STM.fail`, construct an `STM` representing failure with the string
+   * "Uh oh".
+   */
+  val failure1: STM[String, Nothing] = ???
+
+  /**
+   * EXERCISE 5
+   *
+   * Implement the `transfer1` function, which transfers "money" from
+   * one account to another account. If the "from" account does not
+   * have enough money, then fail with a string error message.
+   */
+  def transfer1(from: TRef[Int], to: TRef[Int], howMuch: Int): STM[String, Unit] =
+    ???
+
+  /**
+   * EXERCISE 6
+   *
+   * Implement another version of the transfer function, but this time,
+   * if the sender account has insufficient funds, suspend the transaction
+   * until later (when more funds are available) using `STM.retry`.
+   */
+  def transfer2(from: TRef[Int], to: TRef[Int], howMuch: Int): STM[Nothing, Unit] =
+    ???
+
+  /**
+   * EXERCISE 7
+   *
+   * Implement another version of the transfer function, which has the same
+   * behavior as `transfer2`, but which uses `STM.check`, a convenience
+   * method that interrnally uses `STM.retry`.
+   */
+  def transfer3(from: TRef[Int], to: TRef[Int], howMuch: Int): STM[Nothing, Unit] =
+    ???
+
+  /**
+   * EXERCISE 8
+   *
+   * Implement yet another version of the transfer function, which has the
+   * same behavior as `transfer2`, but which uses `STM#filter` to perform
+   * the check on the balance of the "from" account.
+   */
+  def transfer4(from: TRef[Int], to: TRef[Int], howMuch: Int): STM[Nothing, Unit] =
+    ???
+
+  /**
+   * EXERCISE 9
+   *
+   * Using one of the preceding (retrying) transfer functions and `STM#orElse`,
+   * try to transfer 100 from Bob to Sarah, but if that fails, transfer 100
+   * from Tom to Sarah.
+   */
+  def orElseExample(bob: TRef[Int], sarah: TRef[Int], tom: TRef[Int]): STM[Nothing, Unit] =
+    ???
+
+  /**
+   * EXERCISE 10
+   *
+   * Using a `TRef[Boolean]`, implement a simple lock, which has `lock` and
+   * `unlock` methods.
+   */
+  class Lock(value: TRef[Boolean]) {
+    def lock: STM[Nothing, Unit] = ???
+
+    def unlock: STM[Nothing, Unit] = ???
+  }
+  object Lock {
+    def make: STM[Nothing, Lock] = TRef.make(false).map(r => new Lock(r))
+  }
+
+  /**
+   * EXERCISE 11
+   *
+   * Using `ZIO#descriptor` and the `FiberId` inside the descriptor, implement
+   * a "fiber reentrant" lock.
+   */
+  class ReentrantLock(value: TRef[Option[FiberId]]) {
+    def lock: UIO[Unit] = ???
+
+    def unlock: UIO[Boolean] = ???
+  }
+  object ReentrantLock {
+    def make: UIO[ReentrantLock] = TRef.make(Option.empty[FiberId]).map(r => new ReentrantLock(r)).commit
+  }
 }
