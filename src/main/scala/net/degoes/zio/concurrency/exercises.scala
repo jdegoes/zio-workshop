@@ -167,7 +167,8 @@ object zio_parallelism {
 
   def getUser(id: Int): IO[String, User] = IO.effect(users(id)).mapError(_.getMessage)
 
-  def getAllUsers(ids: List[Int]): IO[String, ???] = ???
+  def getAllUsers(ids: List[Int]): IO[String, ???] =
+    ???
 
   /**
    * EXERCISE 3
@@ -953,5 +954,41 @@ object zio_stm {
   }
   object ReentrantLock {
     def make: UIO[ReentrantLock] = TRef.make(Option.empty[FiberId]).map(r => new ReentrantLock(r)).commit
+  }
+
+  /**
+   * EXERCISE 12
+   *
+   * Implement `TArray`, a transactional array.
+   */
+  class TArray[A] private (val array: Array[TRef[A]]) extends AnyVal {
+    final def set(i: Int, v: A): STM[Nothing, Unit] = ???
+
+    final def get(i: Int): STM[Nothing, A] = ???
+
+    final def update(i: Int, f: A => A): STM[Nothing, A] = ???
+
+    final def modify[B](i: Int, f: A => (B, A)): STM[Nothing, B] = ???
+  }
+  object TArray {
+    def make[A](n: Int): STM[Nothing, TArray[A]] = ???
+  }
+
+  /**
+   * EXERCISE 13
+   *
+   * Implement `TMap`, a transactional hash map.
+   */
+  class TMap[K, V] private {
+    def get(k: K): STM[Nothing, Option[V]] = ???
+
+    def set(k: K, v: V): STM[Nothing, Unit] = ???
+
+    def update(k: K, f: V => V): STM[Nothing, V] = ???
+
+    def modify[B](k: K, f: V => (B, V)): STM[Nothing, B] = ???
+  }
+  object TMap {
+    def make[K, V](load: Int = 16): STM[Nothing, TMap[K, V]] = ???
   }
 }

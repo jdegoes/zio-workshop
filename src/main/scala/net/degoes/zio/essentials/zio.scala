@@ -10,6 +10,7 @@ import scalaz.zio._
 import scalaz.zio.internal.PlatformLive
 
 import scala.io.Source
+import java.time.Clock
 
 /**
  * `ZIO[R, E, A]` is an immutable data structure that models an effect, which
@@ -30,7 +31,7 @@ object zio_types {
   /**
    * EXERCISE 1
    *
-   * A program that might fail with an error of type `E` or succeed with a
+   * An effect that might fail with an error of type `E` or succeed with a
    * value of type `A`.
    */
   type FailOrSuccess[E, A] = ???
@@ -38,21 +39,21 @@ object zio_types {
   /**
    * EXERCISE 2
    *
-   * A program that never fails and might succeed with a value of type `A`
+   * An effect that never fails and might succeed with a value of type `A`
    */
   type Success[A] = ???
 
   /**
    * EXERCISE 3
    *
-   * A program that runs forever but might fail with `E`.
+   * An effect that runs forever but might fail with `E`.
    */
   type Forever[E] = ???
 
   /**
    * EXERCISE 4
    *
-   * A program that cannot fail or succeed with a value.
+   * An effect that cannot fail or succeed with a value.
    */
   type NeverStops = ???
 
@@ -128,7 +129,7 @@ object zio_values {
    * Note: You will have to use the `.refineOrDie` method to refine the
    * `Throwable` type into something more specific.
    */
-  val getStrLn: ??? = ???
+  val getStrLn: Task[String] = ???
 
   /**
    * EXERCISE 6
@@ -247,9 +248,9 @@ object zio_operations {
    * Using `ZIO#flatMap`, check the integer produced by an effect, and if it
    * is even, return `attack`, but if it is odd, return `retreat`.
    */
-  val attack: UIO[Unit]    = UIO.effectTotal(println("Attacking!"))
-  val retreat: UIO[Unit]   = UIO.effectTotal(println("Retreating!"))
-  val action: UIO[Boolean] = UIO(42) ?
+  val attack: UIO[Boolean]  = UIO.effectTotal(println("Attacking!")).const(true)
+  val retreat: UIO[Boolean] = UIO.effectTotal(println("Retreating!")).const(false)
+  val action: UIO[Boolean]  = UIO(42) ?
 
   /**
    * EXERCISE 4
@@ -392,7 +393,8 @@ object zio_failure {
       throw new IndexOutOfBoundsException(s"The index $i is out of bounds [0, ${a.length} )")
     else a(i)
 
-  def accessArr2[A](i: Int, a: Array[A]): IO[IndexOutOfBoundsException, A] = ???
+  def accessArr2[A](i: Int, a: Array[A]): IO[IndexOutOfBoundsException, A] =
+    ???
 
   /**
    * EXERCISE 3
@@ -411,7 +413,7 @@ object zio_failure {
    */
   def printError(err: String): UIO[Unit] = UIO(println(err))
   def printDivision(int: Int): UIO[Unit] = UIO(println("Division is: " + int))
-  val recovered2: UIO[Unit]              = divide(100, 0) ?
+  val recovered2: UIO[Unit]              = ???
 
   /**
    * EXERCISE 5
@@ -571,7 +573,7 @@ object zio_interop extends DefaultRuntime {
    * Using `Task#toFuture`, unsafely convert the following `Task` into `Future`.
    */
   val task1: Task[Int]       = IO.effect("wrong".toInt)
-  val tToFuture: Future[Int] = ???
+  val tToFuture: Future[Int] = task1 ?
 
   /**
    * EXERCISE 4
@@ -581,6 +583,30 @@ object zio_interop extends DefaultRuntime {
    */
   lazy val future2        = Future.successful("Hello World")
   val task2: Task[String] = ???
+
+  /**
+   * EXERCISE 5
+   *
+   * Use `Task.fromTry` to convert the `Try` into a ZIO `Task`.
+   */
+  val tryValue  = scala.util.Failure(new Throwable("Uh oh"))
+  val tryEffect = ZIO.fromTry(???)
+
+  /**
+   * EXERCISE 6
+   *
+   * Use `IO.fromOption` to convert the `Option` into a ZIO `IO`.
+   */
+  val optionValue  = Some("foo")
+  val optionEffect = ZIO.fromOption(???)
+
+  /**
+   * EXERCISE 7
+   *
+   * Use `IO.fromEither` to convert the `Either` into a ZIO `IO`.
+   */
+  val eitherValue  = Right("foo")
+  val eitherEffect = ZIO.fromEither(???)
 }
 
 /**
@@ -642,8 +668,7 @@ object zio_resources {
       throw new Exception("Boom!")
     } finally i -= 1
 
-  val noChange2: Task[Unit] =
-    ???
+  val noChange2: Task[Unit] = ???
 
   /**
    * EXERCISE 2
@@ -714,10 +739,11 @@ object zio_resources {
   /**
    * EXERCISE 6
    *
-   * Using the `Managed.bracket` constructor, create a `Managed` resource
+   * Using the `Managed.make` constructor, create a `Managed` resource
    * for a `FileInputStream`.
    */
-  def managedFile(file: File): Managed[Throwable, FileInputStream] = ???
+  def managedFile(file: File): Managed[Throwable, FileInputStream] =
+    ???
 
   /**
    * EXERCISE 7
@@ -734,6 +760,10 @@ object zio_resources {
 object zio_environment {
   import scalaz.zio.console.Console
   import scalaz.zio.console
+  import scalaz.zio.clock.Clock
+  import scalaz.zio.clock
+  import scalaz.zio.random.Random
+  import scalaz.zio.random
 
   /**
    * The Default Modules in ZIO:
@@ -780,7 +810,7 @@ object zio_environment {
   /**
    * EXERCISE 5
    *
-   * Write the type of a program that requires Clock and System and which
+   * Write the type of a program that requires `Clock` and `System` and which
    * could fail with `E` or succeed with `A`:
    */
   type ClockWithSystemIO[E, A] = ???
@@ -807,7 +837,7 @@ object zio_environment {
    * Write the type of a program that requires `Clock`, `Console`, `System` and
    * `Random` and which could fail with `E` or succeed with `A`:
    */
-  type ClockWithConsoleWithSystemWithRandom = ???
+  type ClockWithConsoleWithSystemWithRandom[E, A] = ???
 
   /**
    * EXERCISE 9
@@ -831,8 +861,7 @@ object zio_environment {
    * In a for comprehension, call various methods in zio.clock._, zio.console._,
    * and zio.random._, and identify the composite return type.
    */
-  val program: ZIO[???, ???, ???] =
-    ???
+  val program = ???
 
   /**
    * Build a new Service called `Configuration`

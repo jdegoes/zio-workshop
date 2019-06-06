@@ -2,6 +2,9 @@
 
 package net.degoes.zio
 package essentials
+import net.degoes.zio.essentials.effects.Console.ReadLine
+import net.degoes.zio.essentials.effects.Console.WriteLine
+import net.degoes.zio.essentials.effects.Console.Return
 
 object effects {
 
@@ -107,8 +110,7 @@ object effects {
    * passing every value to a body, which effectfully computes a `B`, and
    * collecting all such `B` values in a list.
    */
-  def foreach[A, B](values: List[A])(body: A => Console[B]): Console[List[B]] =
-    ???
+  def foreach[A, B](values: List[A])(body: A => Console[B]): Console[List[B]] = ???
 
   /**
    * Using `Console.writeLine` and `Console.readLine`, map the following
