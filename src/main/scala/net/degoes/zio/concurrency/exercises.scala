@@ -127,7 +127,7 @@ object zio_fibers {
    *
    * Using `FiberRef.make`, create a `FiberRef` that is initially set to 0.
    */
-  val fiberRef: UIO[FiberLocal[Int]] = ???
+  val fiberRef: UIO[FiberRef[Int]] = ???
 
   /**
    * EXERCISE 16

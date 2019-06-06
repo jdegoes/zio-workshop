@@ -13,6 +13,7 @@ import scala.concurrent.ExecutionContext
 import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.Executors
 import scalaz.zio.blocking.Blocking
+import java.sql.ResultSet
 
 object zio_errors {
 
@@ -136,7 +137,7 @@ object zio_errors {
    * Using `ZIO#sandbox`, bulletproof this web server to defects in the
    * request handler.
    */
-  lazy val acceptConnection: Task[(Request, Response => Task[Unit])] = ???
+  lazy val acceptConnection: Task[(Request, Response => Task[Unit])] = ??? // Assume implemented
   def launchServer(handler: Request => Task[Response]): UIO[Nothing] = {
     def loop: UIO[Nothing] =
       acceptConnection.foldM(_ => loop, {
@@ -277,7 +278,7 @@ object zio_threads {
    * Implement a method on `UserService` that can return a decorated
    * `UserService` that locks all methods onto the specified `Executor`.
    */
-  trait UserService {
+  trait UserService { self =>
     def lookupName(id: Long): Task[String]
 
     def lookupAddress(id: Long): Task[(Int, String)]
@@ -288,4 +289,57 @@ object zio_threads {
   def fib(n: BigInt): UIO[BigInt] =
     if (n <= 1) UIO(n)
     else fib(n - 1).zipWith(fib(n - 2))(_ + _)
+}
+
+object environment {
+  /**
+   * EXERCISE 1
+   * 
+   * Make the `LiveUserStore` depend on a `Database` by having the 
+   * `LiveUserStore` trait extend `Database`.
+   */
+   trait LiveUserStore extends UserStore { }
+
+   /**
+    * EXERCISE 2
+    *
+    * Effectfully create a `Database` module inside `Task`. In a real 
+    * implementation, this method might actually perform the database 
+    * connection.
+    */
+   def connect(connectionUrl: String): Task[Database] = ???
+
+   /**
+    * EXERCISE 3
+    * 
+    * Define a `UserStore` in terms of a `Database`.
+    */
+   lazy val userService: ZIO[Database, Nothing, UserStore] = ???
+
+   /**
+    * EXERCISE 4
+    *
+    * Using `provideSomeM`, eliminate the `UserStore` dependency.
+    */
+   lazy val myProgram: ZIO[UserStore, Throwable, Unit] = ??? // Assume implemented
+   lazy val eliminated: ZIO[Database, Throwable, Unit] = ???
+
+   trait Database {
+     val database: Database.Service
+   }
+   object Database {
+     trait Service {
+       def query(query: String): Task[ResultSet]
+     }
+   }
+
+   trait UserStore {
+     val userStore: UserStore.Service
+   }
+   object UserStore {
+     trait Service {
+      def getUserById(id: Long): Task[UserProfile]
+     }
+   }
+   case class UserProfile(name: String, age: Int, address: String)
 }
