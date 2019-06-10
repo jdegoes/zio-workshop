@@ -98,7 +98,7 @@ object zio_errors {
    * error possible.
    */
   def parseInt2(value: String): Option[Int]                       = ???
-  def httpReqest2(request: Request): Try[Response]                = ???
+  def httpRequest2(request: Request): Try[Response]               = ???
   def ensureEmailValid(email: String): Either[InvalidEmail, Unit] = ???
   final case class InvalidEmail(message: String)
 
