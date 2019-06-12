@@ -947,13 +947,13 @@ object zio_stm {
    * Using `ZIO#descriptor` and the `FiberId` inside the descriptor, implement
    * a "fiber reentrant" lock.
    */
-  class ReentrantLock(value: TRef[Option[FiberId]]) {
+  class ReentrantLock(value: TRef[Option[(FiberId, Int)]]) {
     def lock: UIO[Unit] = ???
 
-    def unlock: UIO[Boolean] = ???
+    def unlock: UIO[Unit] = ???
   }
   object ReentrantLock {
-    def make: UIO[ReentrantLock] = TRef.make(Option.empty[FiberId]).map(r => new ReentrantLock(r)).commit
+    def make: UIO[ReentrantLock] = TRef.make(Option.empty[(FiberId, Int)]).map(r => new ReentrantLock(r)).commit
   }
 
   /**

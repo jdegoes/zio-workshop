@@ -14,9 +14,12 @@ import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.Executors
 import scalaz.zio.blocking.Blocking
 import java.sql.ResultSet
+import scala.concurrent.Await
+import java.util.concurrent.Future
+import java.io.FileOutputStream
+import java.io.File
 
-object zio_errors {
-
+object errors {
   /**
    * EXERCISE 1
    *
@@ -66,7 +69,7 @@ object zio_errors {
    *
    * Correct what is wrong with the following data model for HTTP client errors.
    */
-  sealed trait HttpClientError
+  sealed trait HttpClientError extends Throwable
   object HttpClientError {
     final case class Informational(subtype: Int, message: String) extends HttpClientError
     final case class Successful(subtype: Int, message: String)    extends HttpClientError
@@ -97,7 +100,7 @@ object zio_errors {
    * Modify all these methods to return ZIO effects, using the most narrow
    * error possible.
    */
-  def parseInt2(value: String): Option[Int]                       = ???
+  def parseInt2(value: String): IO[Unit, Int]                       = ???
   def httpReqest2(request: Request): Try[Response]                = ???
   def ensureEmailValid(email: String): Either[InvalidEmail, Unit] = ???
   final case class InvalidEmail(message: String)
@@ -105,11 +108,26 @@ object zio_errors {
   /**
    * EXERCISE 8
    *
+   * An app is built from services returning the following error types.
+   * These error types do not compose. Fix the problem.
+   */
+  sealed trait CacheServiceError
+  sealed trait PricingServiceError
+  sealed trait ProductCatalogServiceError
+
+  /**
+   * EXERCISE 9
+   *
    * Revise your solutions to Exercise 7, this time unifying the error types,
    * so all effects can be used in the same `for` comprehension.
    */
+  def parseInt3(value: String): ???         = ???
+  def httpReqest3(request: Request): ???    = ???
+  def ensureEmailValid2(email: String): ??? = ???
+  sealed trait MyError
+
   /**
-   * EXERCISE 9
+   * EXERCISE 10
    *
    * Create a partial function that (plausibly) maps the "recoverable" errors
    * of `HttpClientError` into the semantic error type `UserServiceError`.
@@ -124,7 +142,7 @@ object zio_errors {
   }
 
   /**
-   * EXERCISE 10
+   * EXERCISE 11
    *
    * Using `ZIO#refineOrDie` and `mapErrors1`, map the output of this
    * function.
@@ -132,7 +150,7 @@ object zio_errors {
   def translateErrors(response: IO[HttpClientError, Response]): IO[UserServiceError, Response] = ???
 
   /**
-   * EXERCISE 11
+   * EXERCISE 12
    *
    * Using `ZIO#sandbox`, bulletproof this web server to defects in the
    * request handler.
@@ -154,19 +172,9 @@ object zio_errors {
 
     loop
   }
-
-  /**
-   * EXERCISE 12
-   *
-   * An app is built from services returning the following error types.
-   * These error types do not compose. Fix the problem.
-   */
-  sealed trait CacheError
-  sealed trait PricingServiceError
-  sealed trait ProductCatalogServiceError
 }
 
-object zio_threads {
+object threads {
 
   /**
    * EXERCISE 1
@@ -264,13 +272,15 @@ object zio_threads {
    * determine which threads are executing which effects.
    */
   lazy val investigation =
+    UIO(println("Main")) *> 
     onDatabase {
       UIO(println("Database")) *>
         blocking.blocking {
           UIO(println("Blocking"))
         } *>
         UIO(println("Database"))
-    }
+    } *>
+    UIO(println("Main"))
 
   /**
    * EXERCISE 11
@@ -286,19 +296,85 @@ object zio_threads {
     def lock(exec: Executor): UserService = ???
   }
 
+  // ZIO.fromFuture
+
   def fib(n: BigInt): UIO[BigInt] =
     if (n <= 1) UIO(n)
     else fib(n - 1).zipWith(fib(n - 2))(_ + _)
 }
 
-object environment {
+object reader {
+  final case class Reader[-R, +A](run: R => A) { self =>
+    def provide(r: R): Reader[Any, A] = Reader(_ => run(r))
+
+    def map[B](f: A => B): Reader[R, B] = Reader(r => f(self.run(r)))
+
+    def flatMap[R1 <: R, B](f: A => Reader[R1, B]): Reader[R1, B] = 
+      Reader(r => f(self.run(r)).run(r))
+  }
+
+  object Reader {
+    def succeed[A](a: => A): Reader[Any, A] = Reader(_ => a)
+
+    def environment[R]: Reader[R, R] = Reader(r => r)
+
+    def access[R, A](f: R => A): Reader[R, A] = Reader(f)
+
+    def accessM[R, A](f: R => Reader[R, A]): Reader[R, A] = ???
+  }
+
+  trait HasConfig1 {
+    def config1: Config1
+  }
+  def config1: Reader[HasConfig1, Config1] = Reader.access(_.config1)
+
+  final case class Config1(logFile: String, port: Int, timeout: Long)
+
+  trait HasConfig2 {
+    def config2: Config2
+  }
+  def config2: Reader[HasConfig2, Config2] = Reader.access(_.config2)
+
+  final case class Config2(apiEndpoint: String)
+
+  def printTimeout: Reader[HasConfig1, Unit] = 
+    config1.map(config => println(config.timeout))
+
+  def openLogFile: Reader[HasConfig1, FileOutputStream] = 
+    config1.map(config => new FileOutputStream(new File(config.logFile)))
+
+  def logPort(fos: FileOutputStream): Reader[HasConfig1, Unit] =
+    config1.map(config => fos.write(config.port.toString.getBytes()))
+
+  def printEndpoint: Reader[HasConfig2, Unit] = 
+    config2.map(config => println(config.apiEndpoint))
+
+  def program: Reader[HasConfig1 with HasConfig2, Unit] = 
+    for {
+      _   <- printTimeout
+      fos <- openLogFile 
+      _   <- logPort(fos)
+      _   <- printEndpoint
+    } yield fos.close()
+  
+  program.run(new HasConfig1 with HasConfig2 {
+    val config1 = Config1("logfile.dat", 8080, 1000L)
+    val config2 = Config2("https://google.com/api")
+  })
+}
+
+object dependencies {
   /**
    * EXERCISE 1
    * 
    * Make the `LiveUserStore` depend on a `Database` by having the 
    * `LiveUserStore` trait extend `Database`.
    */
-   trait LiveUserStore extends UserStore { }
+   trait LiveUserStore extends UserStore { 
+    val userStore: UserStore.Service = new UserStore.Service {
+      def getUserById(id: Long): Task[UserProfile] = ???
+    }
+   }
 
    /**
     * EXERCISE 2
@@ -307,14 +383,24 @@ object environment {
     * implementation, this method might actually perform the database 
     * connection.
     */
-   def connect(connectionUrl: String): Task[Database] = ???
+   def connect(connectionUrl: String): Task[Database] = 
+    Task.effect {
+      val dbConn = ???
+
+      ???
+    }
 
    /**
     * EXERCISE 3
     * 
     * Define a `UserStore` in terms of a `Database`.
     */
-   lazy val userService: ZIO[Database, Nothing, UserStore] = ???
+   lazy val userService: ZIO[Database, Nothing, UserStore] = 
+    ZIO.accessM[Database](env =>
+      UIO {
+        ???
+      }
+    )
 
    /**
     * EXERCISE 4
