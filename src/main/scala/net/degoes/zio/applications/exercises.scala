@@ -1048,30 +1048,52 @@ object hangman extends App {
 }
 
 object parallel_web_crawler {
+  trait Web {
+    def web: Web.Service
+  }
+  object Web {
+    trait Service {
+      def getURL(url: URL): IO[Exception, String]
+    }
+    trait Live extends Web with Blocking {
+      val web = new Service {
+        /**
+         * EXERCISE 1
+         * 
+         * Use the `effectBlocking` combinator to safely import the Scala `Source.fromURL`
+         * side-effect into a purely functional ZIO effect, using `refineOrDie` to narrow
+         * the `Throwable` error to `Exceptiono`.
+         */
+        def getURL(url: URL): IO[Exception, String] = {
+          // def effectBlocking[A](sideEffect: => A): ZIO[Blocking, Throwable, A]
+          
+          def getURLImpl(url: URL): String =
+            scala.io.Source.fromURL(url.url)(scala.io.Codec.UTF8).mkString
+      
+          ???
+        }
+      }
+    }
+  }
 
   /**
-   *  Use the `effectBlocking` combinator to safely import the Scala `Source.fromURL`
-   * side-effect into a purely functional ZIO effect, using `refineOrDie` to narrow
-   * the `Throwable` error to `Exceptiono`.
+   * EXERCISE 2
+   * 
+   * Using `ZIO.accessM`, delegate to the `Web` module's `getURL` function.
    */
-  def getURL(url: URL): ZIO[Blocking, Exception, String] = {
-    // def effectBlocking[A](sideEffect: => A): ZIO[Blocking, Throwable, A]
-    import scalaz.zio.blocking.effectBlocking
-
-    def getURLImpl(url: URL): String =
-      scala.io.Source.fromURL(url.url)(scala.io.Codec.UTF8).mkString
-
-    ???
-  }
+  def getURL(url: URL): ZIO[Web, Exception, String] = ???
 
   final case class CrawlState[+E](visited: Set[URL], errors: List[E]) {
-    def visitAll(urls: Set[URL]): CrawlState[E] = copy(visited = visited ++ urls)
+    final def visitAll(urls: Set[URL]): CrawlState[E] = copy(visited = visited ++ urls)
 
-    def logError[E1 >: E](e: E1): CrawlState[E1] = copy(errors = e :: errors)
+    final def logError[E1 >: E](e: E1): CrawlState[E1] = copy(errors = e :: errors)
   }
 
   /**
+   * EXERCISE 3
+   * 
    * Implement the `crawl` function using the helpers provided in this object.
+   * 
    * {{{
    * def getURL(url: URL): ZIO[Blocking, Exception, String]
    * def extractURLs(root: URL, html: String): List[URL]
@@ -1081,12 +1103,7 @@ object parallel_web_crawler {
     seeds: Set[URL],
     router: URL => Set[URL],
     processor: (URL, String) => IO[E, Unit]
-  ): ZIO[Blocking, Nothing, List[E]] = {
-    def loop(seeds: Set[URL], ref: Ref[CrawlState[E]]): ZIO[Blocking, Nothing, Unit] =
-      ???
-
-    ???
-  }
+  ): ZIO[Web, Nothing, List[E]] = ???
 
   /**
    * A data structure representing a structured URL, with a smart constructor.
@@ -1157,13 +1174,20 @@ object parallel_web_crawler {
         About         -> """<html><body><a href="home.html">Home</a><a href="http://google.com">Google</a></body></html>"""
       )
 
-    val getURL: URL => IO[Exception, String] =
-      (url: URL) =>
-        SiteIndex
-          .get(url)
-          .fold[IO[Exception, String]](IO.fail(new Exception("Could not connect to: " + url)))(IO.effectTotal(_))
+    val TestWeb = new Web {
+      val web = new Web.Service {
+        /**
+         * EXERCISE 4
+         * 
+         * Use the `SiteIndex` test data to provide an implementation of 
+         * `getURL` for the `TestWeb` module.
+         */
+        def getURL(url: URL): IO[Exception, String] = 
+          ???
+      }
+    }
 
-    val ScalazRouter: URL => Set[URL] =
+    val TestRouter: URL => Set[URL] =
       url => if (url.parsed.apexDomain == Some("scalaz.org")) Set(url) else Set()
 
     val Processor: (URL, String) => IO[Unit, List[(URL, String)]] =
