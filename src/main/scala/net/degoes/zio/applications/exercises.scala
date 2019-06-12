@@ -10,6 +10,11 @@ import scalaz.zio.duration.Duration
 import scalaz.zio.random.Random
 
 import java.io.IOException
+import net.degoes.zio.applications.hangman.GuessResult.Incorrect
+import net.degoes.zio.applications.hangman.GuessResult.Won
+import net.degoes.zio.applications.hangman.GuessResult.Correct
+import net.degoes.zio.applications.hangman.GuessResult.Unchanged
+import net.degoes.zio.applications.hangman.GuessResult.Lost
 
 object circuit_breaker extends App {
 
@@ -35,15 +40,34 @@ object hangman extends App {
    * Create a hangman game that requires the capability to perform `Console` and
    * `Random` effects.
    */
-  lazy val myGame: ZIO[Console with Random, IOException, Unit] = ???
+  lazy val myGame: ZIO[Console with Random, IOException, Unit] = 
+    ???
 
-  case class State(name: String, guesses: Set[Char], word: String) {
-    def failures: Int = (guesses -- word.toSet).size
+  final case class State(name: String, guesses: Set[Char], word: String) {
+    final def failures: Int = (guesses -- word.toSet).size
 
-    def playerLost: Boolean = failures > 10
+    final def playerLost: Boolean = failures > 10
 
-    def playerWon: Boolean = (word.toSet -- guesses).isEmpty
+    final def playerWon: Boolean = (word.toSet -- guesses).isEmpty
+
+    final def addChar(char: Char): State = copy(guesses = guesses + char)
   }
+
+  sealed trait GuessResult 
+  object GuessResult {
+    case object Won  extends GuessResult
+    case object Lost extends GuessResult
+    case object Correct  extends GuessResult
+    case object Incorrect extends GuessResult 
+    case object Unchanged extends GuessResult
+  }
+
+  def guessResult(oldState: State, newState: State, char: Char): GuessResult = 
+    if (oldState.guesses.contains(char)) GuessResult.Unchanged 
+    else if (newState.playerWon) GuessResult.Won 
+    else if (newState.playerLost) GuessResult.Lost 
+    else if (oldState.word.contains(char)) GuessResult.Correct 
+    else GuessResult.Incorrect
 
   /**
    * Implement the main game loop, which gets choices from the user until
@@ -967,8 +991,7 @@ object hangman extends App {
   )
 
   /**
-   *  Instantiate the polymorphic game to the `IO[Nothing, ?]` type.
-   *  by providing `Console`and `Random`
+   *  Eliminate the game's environment by providing it `Console with Random`
    */
   lazy val myGameIO: UIO[Unit] = myGame ?
 
@@ -1008,6 +1031,17 @@ object hangman extends App {
       def nextString(length: Int): UIO[String]                = UIO("foo")
     }
   }
+
+  val Scenario1: TestData = 
+    TestData(
+      output   = Nil, 
+      input    = "John" :: "a" :: "r" :: "o" :: "n" :: Nil, 
+      integers = 0 :: Nil 
+    )
+
+  lazy val testScenario1 = runScenario(Scenario1).flatMap(testData =>
+    putStrLn(testData.render)
+  )
 
   override def run(args: List[String]): ZIO[Environment, Nothing, Int] =
     myGame.fold(_ => 1, _ => 0)
