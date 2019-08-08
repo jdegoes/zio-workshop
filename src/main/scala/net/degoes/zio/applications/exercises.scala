@@ -15,24 +15,7 @@ import net.degoes.zio.applications.hangman.GuessResult.Won
 import net.degoes.zio.applications.hangman.GuessResult.Correct
 import net.degoes.zio.applications.hangman.GuessResult.Unchanged
 import net.degoes.zio.applications.hangman.GuessResult.Lost
-
-object circuit_breaker extends App {
-
-  /**
-   * implement a circuit breaker mechanism
-   */
-  trait CircuitBreaker {}
-
-  object CircuitBreaker {
-    sealed trait State
-    final case class Closed(maxFailure: Int)                      extends State
-    final case class Open(startAt: Duration, openUntil: Duration) extends State
-    final case class HalfOpen(retryUntil: Duration)               extends State
-
-  }
-
-  override def run(args: List[String]): ZIO[Environment, Nothing, Int] = ???
-}
+import java.util.concurrent.ConcurrentHashMap
 
 object hangman extends App {
 
@@ -40,7 +23,7 @@ object hangman extends App {
    * Create a hangman game that requires the capability to perform `Console` and
    * `Random` effects.
    */
-  lazy val myGame: ZIO[Console with Random, IOException, Unit] = 
+  lazy val myGame: ZIO[Console with Random, IOException, Unit] =
     ???
 
   final case class State(name: String, guesses: Set[Char], word: String) {
@@ -53,20 +36,20 @@ object hangman extends App {
     final def addChar(char: Char): State = copy(guesses = guesses + char)
   }
 
-  sealed trait GuessResult 
+  sealed trait GuessResult
   object GuessResult {
-    case object Won  extends GuessResult
-    case object Lost extends GuessResult
-    case object Correct  extends GuessResult
-    case object Incorrect extends GuessResult 
+    case object Won       extends GuessResult
+    case object Lost      extends GuessResult
+    case object Correct   extends GuessResult
+    case object Incorrect extends GuessResult
     case object Unchanged extends GuessResult
   }
 
-  def guessResult(oldState: State, newState: State, char: Char): GuessResult = 
-    if (oldState.guesses.contains(char)) GuessResult.Unchanged 
-    else if (newState.playerWon) GuessResult.Won 
-    else if (newState.playerLost) GuessResult.Lost 
-    else if (oldState.word.contains(char)) GuessResult.Correct 
+  def guessResult(oldState: State, newState: State, char: Char): GuessResult =
+    if (oldState.guesses.contains(char)) GuessResult.Unchanged
+    else if (newState.playerWon) GuessResult.Won
+    else if (newState.playerLost) GuessResult.Lost
+    else if (oldState.word.contains(char)) GuessResult.Correct
     else GuessResult.Incorrect
 
   /**
@@ -1032,16 +1015,14 @@ object hangman extends App {
     }
   }
 
-  val Scenario1: TestData = 
+  val Scenario1: TestData =
     TestData(
-      output   = Nil, 
-      input    = "John" :: "a" :: "r" :: "o" :: "n" :: Nil, 
-      integers = 0 :: Nil 
+      output = Nil,
+      input = "John" :: "a" :: "r" :: "o" :: "n" :: Nil,
+      integers = 0 :: Nil
     )
 
-  lazy val testScenario1 = runScenario(Scenario1).flatMap(testData =>
-    putStrLn(testData.render)
-  )
+  lazy val testScenario1 = runScenario(Scenario1).flatMap(testData => putStrLn(testData.render))
 
   override def run(args: List[String]): ZIO[Environment, Nothing, Int] =
     myGame.fold(_ => 1, _ => 0)
@@ -1057,19 +1038,20 @@ object parallel_web_crawler {
     }
     trait Live extends Web with Blocking {
       val web = new Service {
+
         /**
          * EXERCISE 1
-         * 
+         *
          * Use the `effectBlocking` combinator to safely import the Scala `Source.fromURL`
          * side-effect into a purely functional ZIO effect, using `refineOrDie` to narrow
          * the `Throwable` error to `Exceptiono`.
          */
         def getURL(url: URL): IO[Exception, String] = {
           // def effectBlocking[A](sideEffect: => A): ZIO[Blocking, Throwable, A]
-          
+
           def getURLImpl(url: URL): String =
             scala.io.Source.fromURL(url.url)(scala.io.Codec.UTF8).mkString
-      
+
           ???
         }
       }
@@ -1078,7 +1060,7 @@ object parallel_web_crawler {
 
   /**
    * EXERCISE 2
-   * 
+   *
    * Using `ZIO.accessM`, delegate to the `Web` module's `getURL` function.
    */
   def getURL(url: URL): ZIO[Web, Exception, String] = ???
@@ -1091,9 +1073,9 @@ object parallel_web_crawler {
 
   /**
    * EXERCISE 3
-   * 
+   *
    * Implement the `crawl` function using the helpers provided in this object.
-   * 
+   *
    * {{{
    * def getURL(url: URL): ZIO[Blocking, Exception, String]
    * def extractURLs(root: URL, html: String): List[URL]
@@ -1176,13 +1158,14 @@ object parallel_web_crawler {
 
     val TestWeb = new Web {
       val web = new Web.Service {
+
         /**
          * EXERCISE 4
-         * 
-         * Use the `SiteIndex` test data to provide an implementation of 
+         *
+         * Use the `SiteIndex` test data to provide an implementation of
          * `getURL` for the `TestWeb` module.
          */
-        def getURL(url: URL): IO[Exception, String] = 
+        def getURL(url: URL): IO[Exception, String] =
           ???
       }
     }
@@ -1198,4 +1181,68 @@ object parallel_web_crawler {
     (for {
       _ <- putStrLn("Hello World!")
     } yield ()).fold(_ => 1, _ => 0)
+}
+
+object circuit_breaker extends App {
+  import java.util.concurrent.TimeUnit
+
+  import scalaz.zio.clock._
+
+  /**
+   * EXERCISE 1
+   *
+   * Design an API for the following circuit breaker trait.
+   */
+  trait CircuitBreaker[E] {
+    def apply[R, A](zio: ZIO[R, E, A]): ZIO[R with Clock, E, A]
+  }
+
+  object CircuitBreaker {
+
+    /**
+     * EXERCISE 2
+     *
+     * Design an immutable data structure to hold a time-windowed histogram of 
+     * failures and successes.
+     */
+    private final case class HistogramState(timeUnit: TimeUnit, size: Int /* add more state */) {
+      def add(millis: Long, b: Boolean): HistogramState = ???
+
+      def failures: Int = ???
+
+      def successes: Int = ???
+    }
+
+    /**
+     * EXERCISE 3
+     *
+     * Implement the constructor for `CircuitBreaker`.
+     */
+    def make[E](rejectedError: E, threshold: Double): UIO[CircuitBreaker[E]] =
+      for {
+        ref  <- Ref.make(HistogramState(TimeUnit.MINUTES, 2))
+        hist = new Histogram(ref)
+      } yield
+        new CircuitBreaker[E] {
+          def apply[R, A](zio: ZIO[R, E, A]): ZIO[R with Clock, E, A] =
+            for {
+              failures  <- hist.failures
+              successes <- hist.successes
+              ratio     = failures.toDouble / successes.toDouble
+              a <- if (ratio > threshold) ZIO.fail(rejectedError)
+                  else
+                    clock
+                      .currentTime(TimeUnit.MILLISECONDS)
+                      .flatMap(millis => zio.tapBoth(_ => hist.add(millis, false), _ => hist.add(millis, true)))
+            } yield a
+        }
+
+    private class Histogram(ref: Ref[HistogramState]) {
+      def add(millis: Long, b: Boolean): UIO[Unit] = ref.update(_.add(millis, b)).unit
+      def failures: UIO[Int]                       = ref.get.map(_.failures)
+      def successes: UIO[Int]                      = ref.get.map(_.successes)
+    }
+  }
+
+  override def run(args: List[String]): ZIO[Environment, Nothing, Int] = ???
 }

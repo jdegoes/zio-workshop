@@ -20,6 +20,7 @@ import java.io.FileOutputStream
 import java.io.File
 
 object errors {
+
   /**
    * EXERCISE 1
    *
@@ -100,7 +101,7 @@ object errors {
    * Modify all these methods to return ZIO effects, using the most narrow
    * error possible.
    */
-  def parseInt2(value: String): IO[Unit, Int]                       = ???
+  def parseInt2(value: String): IO[Unit, Int]                     = ???
   def httpReqest2(request: Request): Try[Response]                = ???
   def ensureEmailValid(email: String): Either[InvalidEmail, Unit] = ???
   final case class InvalidEmail(message: String)
@@ -272,15 +273,15 @@ object threads {
    * determine which threads are executing which effects.
    */
   lazy val investigation =
-    UIO(println("Main")) *> 
-    onDatabase {
-      UIO(println("Database")) *>
-        blocking.blocking {
-          UIO(println("Blocking"))
-        } *>
-        UIO(println("Database"))
-    } *>
-    UIO(println("Main"))
+    UIO(println("Main")) *>
+      onDatabase {
+        UIO(println("Database")) *>
+          blocking.blocking {
+            UIO(println("Blocking"))
+          } *>
+          UIO(println("Database"))
+      } *>
+      UIO(println("Main"))
 
   /**
    * EXERCISE 11
@@ -309,7 +310,7 @@ object reader {
 
     def map[B](f: A => B): Reader[R, B] = Reader(r => f(self.run(r)))
 
-    def flatMap[R1 <: R, B](f: A => Reader[R1, B]): Reader[R1, B] = 
+    def flatMap[R1 <: R, B](f: A => Reader[R1, B]): Reader[R1, B] =
       Reader(r => f(self.run(r)).run(r))
   }
 
@@ -337,26 +338,26 @@ object reader {
 
   final case class Config2(apiEndpoint: String)
 
-  def printTimeout: Reader[HasConfig1, Unit] = 
+  def printTimeout: Reader[HasConfig1, Unit] =
     config1.map(config => println(config.timeout))
 
-  def openLogFile: Reader[HasConfig1, FileOutputStream] = 
+  def openLogFile: Reader[HasConfig1, FileOutputStream] =
     config1.map(config => new FileOutputStream(new File(config.logFile)))
 
   def logPort(fos: FileOutputStream): Reader[HasConfig1, Unit] =
     config1.map(config => fos.write(config.port.toString.getBytes()))
 
-  def printEndpoint: Reader[HasConfig2, Unit] = 
+  def printEndpoint: Reader[HasConfig2, Unit] =
     config2.map(config => println(config.apiEndpoint))
 
-  def program: Reader[HasConfig1 with HasConfig2, Unit] = 
+  def program: Reader[HasConfig1 with HasConfig2, Unit] =
     for {
       _   <- printTimeout
-      fos <- openLogFile 
+      fos <- openLogFile
       _   <- logPort(fos)
       _   <- printEndpoint
     } yield fos.close()
-  
+
   program.run(new HasConfig1 with HasConfig2 {
     val config1 = Config1("logfile.dat", 8080, 1000L)
     val config2 = Config2("https://google.com/api")
@@ -364,68 +365,70 @@ object reader {
 }
 
 object dependencies {
+
   /**
    * EXERCISE 1
-   * 
-   * Make the `LiveUserStore` depend on a `Database` by having the 
+   *
+   * Make the `LiveUserStore` depend on a `Database` by having the
    * `LiveUserStore` trait extend `Database`.
    */
-   trait LiveUserStore extends UserStore { 
+  trait LiveUserStore extends UserStore {
     val userStore: UserStore.Service = new UserStore.Service {
       def getUserById(id: Long): Task[UserProfile] = ???
     }
-   }
+  }
 
-   /**
-    * EXERCISE 2
-    *
-    * Effectfully create a `Database` module inside `Task`. In a real 
-    * implementation, this method might actually perform the database 
-    * connection.
-    */
-   def connect(connectionUrl: String): Task[Database] = 
+  /**
+   * EXERCISE 2
+   *
+   * Effectfully create a `Database` module inside `Task`. In a real
+   * implementation, this method might actually perform the database
+   * connection.
+   */
+  def connect(connectionUrl: String): Task[Database] =
     Task.effect {
       val dbConn = ???
 
       ???
     }
 
-   /**
-    * EXERCISE 3
-    * 
-    * Define a `UserStore` in terms of a `Database`.
-    */
-   lazy val userService: ZIO[Database, Nothing, UserStore] = 
-    ZIO.accessM[Database](env =>
-      UIO {
-        ???
-      }
+  /**
+   * EXERCISE 3
+   *
+   * Define a `UserStore` in terms of a `Database`.
+   */
+  lazy val userService: ZIO[Database, Nothing, UserStore] =
+    ZIO.accessM[Database](
+      env =>
+        UIO {
+          ???
+        }
     )
 
-   /**
-    * EXERCISE 4
-    *
-    * Using `provideSomeM`, eliminate the `UserStore` dependency.
-    */
-   lazy val myProgram: ZIO[UserStore, Throwable, Unit] = ??? // Assume implemented
-   lazy val eliminated: ZIO[Database, Throwable, Unit] = ???
+  /**
+   * EXERCISE 4
+   *
+   * Using `provideSomeM`, eliminate the `UserStore` dependency.
+   */
+  lazy val myProgram: ZIO[UserStore, Throwable, Unit] = ??? // Assume implemented
+  lazy val eliminated: ZIO[Database, Throwable, Unit] = ???
 
-   trait Database {
-     val database: Database.Service
-   }
-   object Database {
-     trait Service {
-       def query(query: String): Task[ResultSet]
-     }
-   }
+  trait Database {
+    val database: Database.Service
+  }
+  object Database {
+    trait Service {
+      def query(query: String): Task[ResultSet]
+    }
+  }
 
-   trait UserStore {
-     val userStore: UserStore.Service
-   }
-   object UserStore {
-     trait Service {
+  trait UserStore {
+    val userStore: UserStore.Service
+  }
+  object UserStore {
+    trait Service {
       def getUserById(id: Long): Task[UserProfile]
-     }
-   }
-   case class UserProfile(name: String, age: Int, address: String)
+    }
+  }
+  case class UserProfile(name: String, age: Int, address: String)
 }
