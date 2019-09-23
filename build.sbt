@@ -6,14 +6,14 @@ lazy val root = project
     name := "zio-workshop",
     organization := "net.degoes",
     scalaVersion := "2.12.8",
-    initialCommands in Compile in console := """
-                                               |import zio._
-                                               |import console._
-                                               |import zio.stream._
-                                               |object replRTS extends DefaultRuntime {}
-                                               |import replRTS._
-                                               |implicit class RunSyntax[E, A](io: ZIO[DefaultRuntime#Environment, E, A]){ def unsafeRun: A = replRTS.unsafeRun(io) }
-                                         """.stripMargin
+    initialCommands in Compile in console :=
+      """|import zio._
+         |import zio.console._
+         |import zio.duration._
+         |object replRTS extends DefaultRuntime {}
+         |import replRTS._
+         |implicit class RunSyntax[R >: replRTS.Environment, E, A](io: ZIO[R, E, A]){ def unsafeRun: A = replRTS.unsafeRun(io) }
+    """.stripMargin
   )
 
 addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.9.6")
