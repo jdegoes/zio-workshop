@@ -1,3 +1,7 @@
 target
 .sbtopts
 project/.sbt
+.bloop
+.metals
+metals.lock.db
+
