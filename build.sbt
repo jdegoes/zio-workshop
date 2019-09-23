@@ -1,4 +1,4 @@
-val ZIOVersion = "1.0-RC5"
+val ZIOVersion = "1.0.0-RC13"
 
 lazy val root = project
   .in(file("."))
@@ -7,13 +7,12 @@ lazy val root = project
     organization := "net.degoes",
     scalaVersion := "2.12.8",
     initialCommands in Compile in console := """
-                                               |import scalaz._
-                                               |import scalaz.zio._
-                                               |import scalaz.zio.console._
-                                               |import scalaz.zio.stream._
+                                               |import zio._
+                                               |import console._
+                                               |import zio.stream._
                                                |object replRTS extends DefaultRuntime {}
                                                |import replRTS._
-                                               |implicit class RunSyntax[E, A](io: IO[E, A]){ def unsafeRun: A = replRTS.unsafeRun(io) }
+                                               |implicit class RunSyntax[E, A](io: ZIO[DefaultRuntime#Environment, E, A]){ def unsafeRun: A = replRTS.unsafeRun(io) }
                                          """.stripMargin
   )
 
@@ -22,9 +21,9 @@ addCommandAlias("fmt", "all scalafmtSbt scalafmt test:scalafmt")
 addCommandAlias("check", "all scalafmtSbtCheck scalafmtCheck test:scalafmtCheck")
 
 libraryDependencies ++= Seq(
-  // Scalaz-zio
-  "org.scalaz" %% "scalaz-zio"         % ZIOVersion,
-  "org.scalaz" %% "scalaz-zio-streams" % ZIOVersion,
+  // ZIO
+  "dev.zio" %% "zio"         % ZIOVersion,
+  "dev.zio" %% "zio-streams" % ZIOVersion,
   // URL parsing
   "io.lemonlabs" %% "scala-uri" % "1.4.1"
 )

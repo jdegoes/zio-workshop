@@ -4,15 +4,15 @@ package net.degoes.zio.architecture
 
 import scala.util._
 
-import scalaz.zio._
+import zio._
 import net.degoes.zio._
 import scala.compat.Platform
-import scalaz.zio.internal.PlatformLive
-import scalaz.zio.internal.Executor
+import zio.internal.PlatformLive
+import zio.internal.Executor
 import scala.concurrent.ExecutionContext
 import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.Executors
-import scalaz.zio.blocking.Blocking
+import zio.blocking.Blocking
 import java.sql.ResultSet
 import scala.concurrent.Await
 import java.util.concurrent.Future
@@ -218,7 +218,7 @@ object threads {
    * Create a ZIO `Executor` from a Java `ThreadPoolExecutor`.
    */
   lazy val pool         = new ThreadPoolExecutor(???, ???, ???, ???, ???)
-  lazy val poolExecutor = PlatformLive.ExecutorUtil.fromThreadPoolExecutor(_ => 1024)(pool)
+  lazy val poolExecutor = Executor.fromThreadPoolExecutor(_ => 1024)(pool)
 
   /**
    * EXERCISE 6
