@@ -778,7 +778,7 @@ object zio_environment {
   /**
    * EXERCISE 1
    *
-   * Write the type of a program that requires `scalaz.zio.clock.Clock` and which
+   * Write the type of a program that requires `zio.clock.Clock` and which
    * could fail with `E` or succeed with `A`.
    */
   type ClockIO[E, A] = ???
@@ -786,7 +786,7 @@ object zio_environment {
   /**
    * EXERCISE 2
    *
-   * Write the type of a program that requires `scalaz.zio.console.Console` and
+   * Write the type of a program that requires `zio.console.Console` and
    * which could fail with `E` or succeed with A`:
    */
   type ConsoleIO[E, A] = ???
@@ -794,7 +794,7 @@ object zio_environment {
   /**
    * EXERCISE 3
    *
-   * Write the type of a program that requires `scalaz.zio.system.System` and
+   * Write the type of a program that requires `zio.system.System` and
    * which could fail with E or succeed with A:
    */
   type SystemIO[E, A] = ???
@@ -802,7 +802,7 @@ object zio_environment {
   /**
    * EXERCISE 4
    *
-   * Write the type of a program that requires `scalaz.zio.random.Random` and
+   * Write the type of a program that requires `zio.random.Random` and
    * which could fail with `E` or succeed with `A`:
    */
   type RandomIO[E, A] = ???
