@@ -96,7 +96,7 @@ object zio_values {
   /**
    * EXERCISE 2
    *
-   * Using the `ZIO.succeedLazy` method, construct an effect that succeeds with
+   * Using the `ZIO.effectTotal` method, construct an effect that succeeds with
    * the (lazily evaluated) specified value and ascribe the correct type.
    */
   lazy val bigList       = (1L to 100000000L).toList
