@@ -17,6 +17,39 @@ import net.degoes.zio.applications.hangman.GuessResult.Unchanged
 import net.degoes.zio.applications.hangman.GuessResult.Lost
 import java.util.concurrent.ConcurrentHashMap
 
+object sharding extends App {
+  /**
+   * Create N workers reading from a Queue, if one of them fails, 
+   * then wait for the other ones to process the current item, but 
+   * terminate all the workers.
+   */
+  def shard[R, E, A](queue: Queue[A], n: Int, worker: A => ZIO[R, E, Unit]): ZIO[R, E, Unit] = 
+    ???
+
+  def run(args: List[String]) = ???
+}
+
+object alerting {
+  import zio.stm._
+
+  final case class Metrics(
+    hourlyErrors: TRef[Int]
+  )
+
+  final case class Email(value: String)
+
+  final case class Engineer(email: Email)
+
+  def sendSystemEmail(to: Email, subject: String, body: String): UIO[Unit] = ???
+
+  /**
+   * Use STM to alert an engineer when the number of hourly errors exceeds 
+   * 100.
+   */
+  def alertEngineer(metrics: Metrics, onDuty: TRef[Engineer]): UIO[Unit] = 
+    ???
+}
+
 object hangman extends App {
 
   /**
