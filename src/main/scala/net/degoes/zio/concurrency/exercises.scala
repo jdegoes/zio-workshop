@@ -4,11 +4,11 @@ package net.degoes.zio.concurrency
 
 import java.time.LocalDate
 
-import scalaz.zio._
-import scalaz.zio.clock.Clock
-import scalaz.zio.console.{ putStrLn, Console }
-import scalaz.zio.duration._
-import scalaz.zio.stream._
+import zio._
+import zio.clock.Clock
+import zio.console.{ putStrLn, Console }
+import zio.duration._
+import zio.stream._
 
 import net.degoes.zio._
 
@@ -593,7 +593,7 @@ object zio_semaphore {
 }
 
 object zio_stream {
-  import scalaz.zio.stream.Stream
+  import zio.stream.Stream
 
   /**
    * EXERCISE 1
@@ -646,7 +646,7 @@ object zio_stream {
    * terminating when the user enters the command "exit" or "quit".
    */
   import java.io.IOException
-  import scalaz.zio.console.getStrLn
+  import zio.console.getStrLn
   val stream6: ZStream[Console, IOException, String] = ???
 
   /**
@@ -836,7 +836,7 @@ object zio_schedule {
    * only do that for up to 100 times, and produce a list of the inputs to
    * the schedule.
    */
-  import scalaz.zio.random.Random
+  import zio.random.Random
   def mySchedule[A]: ZSchedule[Clock with Random, A, List[A]] =
     ???
 }

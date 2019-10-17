@@ -3,11 +3,11 @@
 package net.degoes.zio
 package applications
 
-import scalaz.zio._
-import scalaz.zio.blocking.Blocking
-import scalaz.zio.console._
-import scalaz.zio.duration.Duration
-import scalaz.zio.random.Random
+import zio._
+import zio.blocking.Blocking
+import zio.console._
+import zio.duration.Duration
+import zio.random.Random
 
 import java.io.IOException
 import net.degoes.zio.applications.hangman.GuessResult.Incorrect
@@ -16,6 +16,39 @@ import net.degoes.zio.applications.hangman.GuessResult.Correct
 import net.degoes.zio.applications.hangman.GuessResult.Unchanged
 import net.degoes.zio.applications.hangman.GuessResult.Lost
 import java.util.concurrent.ConcurrentHashMap
+
+object sharding extends App {
+  /**
+   * Create N workers reading from a Queue, if one of them fails, 
+   * then wait for the other ones to process the current item, but 
+   * terminate all the workers.
+   */
+  def shard[R, E, A](queue: Queue[A], n: Int, worker: A => ZIO[R, E, Unit]): ZIO[R, E, Unit] = 
+    ???
+
+  def run(args: List[String]) = ???
+}
+
+object alerting {
+  import zio.stm._
+
+  final case class Metrics(
+    hourlyErrors: TRef[Int]
+  )
+
+  final case class Email(value: String)
+
+  final case class Engineer(email: Email)
+
+  def sendSystemEmail(to: Email, subject: String, body: String): UIO[Unit] = ???
+
+  /**
+   * Use STM to alert an engineer when the number of hourly errors exceeds 
+   * 100.
+   */
+  def alertEngineer(metrics: Metrics, onDuty: TRef[Engineer]): UIO[Unit] = 
+    ???
+}
 
 object hangman extends App {
 
@@ -1002,16 +1035,18 @@ object hangman extends App {
     }
 
     val random = new Random.Service[Any] {
-      val nextBoolean: UIO[Boolean]                           = UIO(false)
-      def nextBytes(length: Int): UIO[scalaz.zio.Chunk[Byte]] = UIO(Chunk.empty)
-      val nextDouble: UIO[Double]                             = UIO(0.0)
-      val nextFloat: UIO[Float]                               = UIO(0.0f)
-      val nextGaussian: UIO[Double]                           = UIO(0.0)
-      val nextInt: UIO[Int]                                   = ref.modify(data => (data.integers.head, data.copy(integers = data.integers.tail)))
-      def nextInt(n: Int): UIO[Int]                           = ref.modify(data => (data.integers.head, data.copy(integers = data.integers.tail)))
-      val nextLong: UIO[Long]                                 = UIO(0L)
-      val nextPrintableChar: UIO[Char]                        = UIO('A')
-      def nextString(length: Int): UIO[String]                = UIO("foo")
+      val nextBoolean: UIO[Boolean]                                 = UIO(false)
+      def nextBytes(length: Int): UIO[Chunk[Byte]]                  = UIO(Chunk.empty)
+      val nextDouble: UIO[Double]                                   = UIO(0.0)
+      val nextFloat: UIO[Float]                                     = UIO(0.0f)
+      val nextGaussian: UIO[Double]                                 = UIO(0.0)
+      val nextInt: UIO[Int]                                         = ref.modify(data => (data.integers.head, data.copy(integers = data.integers.tail)))
+      def nextInt(n: Int): UIO[Int]                                 = ref.modify(data => (data.integers.head, data.copy(integers = data.integers.tail)))
+      val nextLong: UIO[Long]                                       = UIO(0L)
+      val nextPrintableChar: UIO[Char]                              = UIO('A')
+      def nextString(length: Int): UIO[String]                      = UIO("foo")
+      def nextLong(n: Long): zio.ZIO[Any, Nothing, Long]            = UIO(n - 1)
+      def shuffle[A](list: List[A]): zio.ZIO[Any, Nothing, List[A]] = UIO(list)
     }
   }
 
@@ -1186,7 +1221,7 @@ object parallel_web_crawler {
 object circuit_breaker extends App {
   import java.util.concurrent.TimeUnit
 
-  import scalaz.zio.clock._
+  import zio.clock._
 
   /**
    * EXERCISE 1
@@ -1202,10 +1237,10 @@ object circuit_breaker extends App {
     /**
      * EXERCISE 2
      *
-     * Design an immutable data structure to hold a time-windowed histogram of 
+     * Design an immutable data structure to hold a time-windowed histogram of
      * failures and successes.
      */
-    private final case class HistogramState(timeUnit: TimeUnit, size: Int /* add more state */) {
+    private final case class HistogramState(timeUnit: TimeUnit, size: Int /* add more state */ ) {
       def add(millis: Long, b: Boolean): HistogramState = ???
 
       def failures: Int = ???

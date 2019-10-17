@@ -6,8 +6,8 @@ package essentials
 import java.io.File
 import java.util.concurrent.{ Executors, TimeUnit }
 
-import scalaz.zio._
-import scalaz.zio.internal.PlatformLive
+import zio._
+import zio.internal.PlatformLive
 
 import scala.io.Source
 import java.time.Clock
@@ -107,7 +107,6 @@ object zio_values {
    * integer `42`, and ascribe the correct type.
    */
   val ioInt: ??? = ???
-
 
   /**
    * EXERCISE 2
@@ -773,12 +772,12 @@ object zio_resources {
 }
 
 object zio_environment {
-  import scalaz.zio.console.Console
-  import scalaz.zio.console
-  import scalaz.zio.clock.Clock
-  import scalaz.zio.clock
-  import scalaz.zio.random.Random
-  import scalaz.zio.random
+  import zio.console.Console
+  import zio.console
+  import zio.clock.Clock
+  import zio.clock
+  import zio.random.Random
+  import zio.random
 
   /**
    * The Default Modules in ZIO:

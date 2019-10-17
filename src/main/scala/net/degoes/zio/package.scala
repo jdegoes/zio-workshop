@@ -1,6 +1,6 @@
 package net.degoes
 
-import scalaz.zio.IO
+import _root_.zio.IO
 
 package object zio {
   type ??? = Nothing
