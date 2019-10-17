@@ -16,6 +16,8 @@ object effects {
   sealed trait Console[A] { self =>
 
     /**
+     * EXERCISE 1
+     * 
      * Implement `flatMap` for every type of `Console[A]` to turn it into a
      * `Console[B]` using the function `f`.
      */
@@ -33,6 +35,8 @@ object effects {
     final def <*[B](that: Console[B]): Console[A] = (self zip that).map(_._1)
 
     /**
+     * EXERCISE 2
+     * 
      * Implement the `zip` function using `flatMap` and `map`.
      */
     final def zip[B](that: Console[B]): Console[(A, B)] = ???
@@ -43,7 +47,9 @@ object effects {
     final case class Return[A](value: () => A)                    extends Console[A]
 
     /**
-     * Implement the following helper functions:
+     * EXERCISE 3
+     * 
+     * Implement the following helper functions.
      */
     final val readLine: Console[String]              = ???
     final def writeLine(line: String): Console[Unit] = ???
@@ -51,53 +57,60 @@ object effects {
   }
 
   /**
+   * EXERCISE 4
+   * 
    * Using the helper functions, write a program that just returns a unit value.
    */
-  val unit: Console[???] = ???
+  val unit: Console[Unit] = ???
 
   /**
+   * EXERCISE 5
+   * 
    * Using the helper functions, write a program that just returns the value 42.
    */
-  val fortyTwo: Console[???] = ???
+  val fortyTwo: Console[Int] = ???
 
   /**
+   * EXERCISE 6
+   * 
    * Using the helper functions, write a program that asks the user for their name.
    */
-  val askName: Console[Unit] = ???
+  val askName: Console[Unit] = Console.writeLine("What is your name?")
 
   /**
+   * EXERCISE 7
+   * 
    * Using the helper functions, write a program that reads a line of input from
    * the user.
    */
-  val readName: Console[String] = ???
+  val readName: Console[String] = Console.readLine 
 
   /**
+   * EXERCSE 8
+   * 
    * Write a function that greets the user by the specified name.
    */
-  def greetUser(name: String): Console[Unit] =
-    ???
+  def greetUser(name: String): Console[Unit] = Console.writeLine(s"Hello, ${name}, good to meet you!")
 
-  /***
+  /**
+   * EXERCISE 9
+   * 
    * Using `flatMap` and the preceding three functions, write a program that
    * asks the user for their name, reads their name, and greets them.
    */
-  val sayHello: Console[Unit] =
-    ???
+  val sayHello: Console[Unit] = ???
 
   /**
-   * Write a program that reads from the console then parse the given input into int if it possible
-   * otherwise it returns None
-   */
-  val readInt: Console[???] = ???
-
-  /**
+   * EXERCISE 10
+   * 
    * Implement the following effectful procedure, which effectfully interprets
    * the description of a given `Console[A]` into an `A`.
    */
-  def unsafeRun[A](program: Console[A]): A =
-    ???
+  def unsafeRun[A](program: Console[A]): A = ???
 
   /**
+   * EXERCISE 11
+   * 
    * Implement the following combinator `collectAll` that transforms a list of
    * console programs into a console program that returns a list of collected
    * results of the individual programs.
@@ -106,13 +119,16 @@ object effects {
     ???
 
   /**
+   * EXERCISE 12
+   * 
    * Implement the `foreach` function, which iterates over the values in a list,
    * passing every value to a body, which effectfully computes a `B`, and
    * collecting all such `B` values in a list.
    */
   def foreach[A, B](values: List[A])(body: A => Console[B]): Console[List[B]] = ???
-
   /**
+   * EXERCISE 13
+   *
    * Using `Console.writeLine` and `Console.readLine`, map the following
    * list of strings into a list of programs, each of which prints out its
    * question and reads the answer.
@@ -128,21 +144,24 @@ object effects {
   val answers: List[Console[String]] = ???
 
   /**
+   * EXERCISE 14
+   * 
    * Using `collectAll`, transform `answers` into a program that returns
    * a list of strings.
    */
   val answers2: Console[List[String]] = ???
 
   /**
+   * EXERCISE 15
+   * 
    * Now using only `questions` and `foreach`, write a program that is
    * equivalent to `answers2`.
    */
-  val answers3: Console[List[String]] =
-    foreach(questions) { question =>
-      ???
-    }
-
+  val answers3: Console[List[String]] = ???
+  
   /**
+   * EXERCISE 16
+   * 
    * Implement the missing methods of Thunk.
    */
   class Thunk[A](val unsafeRun: () => A) {
@@ -156,6 +175,8 @@ object effects {
   }
 
   /**
+   * EXERCISE 17
+   * 
    * Build the version of printLn and readLn
    * then make a simple program base on that.
    */

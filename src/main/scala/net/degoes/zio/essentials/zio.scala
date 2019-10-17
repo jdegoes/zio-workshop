@@ -21,7 +21,7 @@ import java.time.Clock
  *  - The effect may fail with an error `E`
  *  - The effect may succeed with a value `A`
  *
- * Mental model: An effectful version of: R => Either[E, A]
+ * Mental model: An effectful version of: `R => Either[E, A]`
  */
 object zio_types {
 
@@ -63,7 +63,7 @@ object zio_types {
    * An effect that may fail with a value of type `E` or succeed with a value
    * of type `A`, and doesn't require any specific environment.
    */
-  type IO[E, A] = ???
+  type IO[+E, +A] = ???
 
   /**
    * EXERCISE 6
@@ -71,7 +71,7 @@ object zio_types {
    * An effect that may fail with `Throwable` or succeed with a value of
    * type `A`, and doesn't require any specific environment.
    */
-  type Task[A] = ???
+  type Task[+A] = ???
 
   /**
    * EXERCISE 7
@@ -79,8 +79,23 @@ object zio_types {
    * An effect that cannot fail but may succeed with a value of type `A`,
    * and doesn't require any specific environment.
    */
-  type UIO[A] = ???
+  type UIO[+A] = ???
 
+  /**
+   * EXERCISE 8
+   *
+   * An effect that may fail with `Throwable` or succeed with a value of 
+   * type `A`, and which requires an `R` environment.
+   */
+  type RIO[-R, +A] = ???
+
+  /**
+   * EXERCISE 8
+   *
+   * An effect that cannot fail, but may succeed with a value of 
+   * type `A`, and which requires an `R` environment.
+   */
+  type URIO[-R, +A] = ???
 }
 
 object zio_values {
@@ -93,18 +108,9 @@ object zio_values {
    */
   val ioInt: ??? = ???
 
-  /**
-   * EXERCISE 2
-   *
-   * Using the `ZIO.succeedLazy` method, construct an effect that succeeds with
-   * the (lazily evaluated) specified value and ascribe the correct type.
-   */
-  lazy val bigList       = (1L to 100000000L).toList
-  lazy val bigListString = bigList.mkString("\n")
-  val ioString: ???      = ???
 
   /**
-   * EXERCISE 3
+   * EXERCISE 2
    *
    * Using the `ZIO.fail` method, construct an effect that fails with the string
    * "Incorrect value", and ascribe the correct type.
@@ -112,7 +118,7 @@ object zio_values {
   val incorrectVal: ??? = ???
 
   /**
-   * EXERCISE 4
+   * EXERCISE 3
    *
    * Using the `ZIO.effectTotal` method, construct an effect that wraps Scala
    * `println` method, so you have a pure functional version of `println`, and
@@ -121,7 +127,7 @@ object zio_values {
   def putStrLn(line: String): ??? = println(line) ?
 
   /**
-   * EXERCISE 5
+   * EXERCISE 4
    *
    * Using the `ZIO.effect` method, wrap Scala's `readLine` method to make it
    * purely functional with the correct ZIO error type.
@@ -138,9 +144,10 @@ object zio_values {
    * purely functional with the correct ZIO error type.
    *
    * Note: You will have to use the `.refineOrDie` method to refine the
-   * `Throwable` type into something more specific.
+   * `Throwable` type into `IOException`.
    */
-  def readFile(file: File): IO[???, List[String]] =
+  import java.io.IOException
+  def readFile(file: File): IO[IOException, List[String]] =
     Source.fromFile(file).getLines.toList ?
 
   /**
@@ -170,7 +177,7 @@ object zio_values {
    * based API into a ZIO effect.
    */
   val scheduledExecutor = Executors.newScheduledThreadPool(1)
-  def sleep(l: Long, u: TimeUnit): UIO[Unit] =
+  def sleep(l: Long, u: TimeUnit): ZIO[Any, Nothing, Unit] =
     scheduledExecutor
       .schedule(new Runnable {
         def run(): Unit = ???
@@ -209,6 +216,15 @@ object zio_values {
 
     //run sayHelloIO using `unsafeRun`
     val sayHello: Unit = ???
+  }
+
+  /**
+   * EXERCISE 13
+   * 
+   * Write a simple hello world program.
+   */
+  object MyMain extends App {
+    def run(args: List[String]) = ???
   }
 }
 
@@ -324,7 +340,7 @@ object zio_operations {
    * Using `ZIO.collectAll`
    * evaluate a list of effects and collect the result into an IO of a list with their result
    */
-  def collect(effects: List[UIO[Int]]): UIO[List[Int]] = effects ?
+  def collect(effects: List[UIO[Int]]): UIO[List[Int]] = ???
 
   /**
    * EXERCISE 12
@@ -369,7 +385,7 @@ object zio_operations {
         println("You guessed wrong! The number was " + number)
     }
   }
-  lazy val playGame2: Task[Unit] = ???
+  lazy val playGame2: UIO[Unit] = ???
 }
 
 object zio_failure {
@@ -679,8 +695,7 @@ object zio_resources {
   def tryCatch1(): Unit =
     try throw new Exception("Uh oh")
     finally println("On the way out...")
-  val tryCatch2: Task[Unit] =
-    ???
+  val tryCatch2: Task[Unit] = ???
 
   /**
    * EXERCISE 3
@@ -877,7 +892,7 @@ object zio_environment {
    * Build a `Config` module that has a reference to a `Config.Service` trait.
    */
   trait Config {
-    val config: ???
+    val config: Config.Service
   }
 
   object Config {
@@ -905,8 +920,8 @@ object zio_environment {
    * and delegate to the functions inside the `Config` service.
    */
   object helpers {
-    val port: ZIO[Config, Nothing, Int]    = ???
-    val host: ZIO[Config, Nothing, String] = ???
+    val port: ZIO[Config, Nothing, Int]    = ZIO.accessM[Config](_.config.port)
+    val host: ZIO[Config, Nothing, String] = ZIO.accessM[Config](_.config.host)
   }
 
   /**
@@ -915,7 +930,7 @@ object zio_environment {
    * Write a program that depends on `Config` and `Console` and use the Scala
    * compiler to infer the correct type.
    */
-  val configProgram: ZIO[???, ???, ???] = ???
+  val configProgram: ZIO[Console with Config, Nothing, Int] = ???
 
   /**
    * EXERCISE 16
@@ -923,7 +938,7 @@ object zio_environment {
    * Give the `configProgram` its dependencies by supplying it with both `Config`
    * and `Console` modules, and determine the type of the resulting effect.
    */
-  val provided = configProgram.provide(???)
+  val provided = configProgram.provide(???) : ZIO[Any, Nothing, Int]
 
   /**
    * EXERCISE 17
