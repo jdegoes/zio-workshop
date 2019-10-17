@@ -4,4 +4,4 @@ project/.sbt
 .bloop
 .metals
 metals.lock.db
-
+project/.bloop/
