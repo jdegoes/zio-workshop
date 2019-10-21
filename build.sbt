@@ -1,4 +1,6 @@
-val ZIOVersion = "1.0.0-RC13"
+val ZIOVersion        = "1.0.0-RC15"
+val CatsEffectVersion = "2.0.0"
+val MonixVersion      = "3.0.0"
 
 lazy val root = project
   .in(file("."))
@@ -22,10 +24,12 @@ addCommandAlias("check", "all scalafmtSbtCheck scalafmtCheck test:scalafmtCheck"
 
 libraryDependencies ++= Seq(
   // ZIO
-  "dev.zio" %% "zio"         % ZIOVersion,
-  "dev.zio" %% "zio-streams" % ZIOVersion,
+  "dev.zio"       %% "zio"          % ZIOVersion,
+  "dev.zio"       %% "zio-streams"  % ZIOVersion,
+  "org.typelevel" %% "cats-effect"  % CatsEffectVersion,
+  "io.monix"      %% "monix"        % MonixVersion,
   // URL parsing
-  "io.lemonlabs" %% "scala-uri" % "1.4.1"
+  "io.lemonlabs"  %% "scala-uri"    % "1.4.1"
 )
 
 scalacOptions in Compile in console := Seq(

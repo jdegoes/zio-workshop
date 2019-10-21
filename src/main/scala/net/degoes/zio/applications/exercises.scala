@@ -1059,7 +1059,7 @@ object hangman extends App {
 
   lazy val testScenario1 = runScenario(Scenario1).flatMap(testData => putStrLn(testData.render))
 
-  override def run(args: List[String]): ZIO[Environment, Nothing, Int] =
+  override def run(args: List[String]): ZIO[ZEnv, Nothing, Int] =
     myGame.fold(_ => 1, _ => 0)
 }
 
@@ -1279,5 +1279,5 @@ object circuit_breaker extends App {
     }
   }
 
-  override def run(args: List[String]): ZIO[Environment, Nothing, Int] = ???
+  override def run(args: List[String]): ZIO[ZEnv, Nothing, Int] = ???
 }
