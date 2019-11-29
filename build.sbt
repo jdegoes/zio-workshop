@@ -1,4 +1,4 @@
-val ZIOVersion        = "1.0.0-RC15"
+val ZIOVersion        = "1.0.0-RC16"
 val CatsEffectVersion = "2.0.0"
 val MonixVersion      = "3.0.0"
 
